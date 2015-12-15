@@ -11,6 +11,9 @@ obj/%.o:%.cpp
 	mkdir -p obj
 	$(CXX) -c $< -o $@ $(FLAGS)
 
+spice:read_spice.cpp Evolution.cpp
+	g++ read_spice.cpp Evolution.cpp -o $@ -std=c++11
+
 .PHONY: clean
 
 clean:

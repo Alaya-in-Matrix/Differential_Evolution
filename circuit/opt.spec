@@ -41,7 +41,6 @@ file::parameter is "opamp_param"      # here dcdc_param is the parameter file
 
     # param for testbench
     # we set vdd = 3.3v
-    param vdd_v      = 3.3;
     param vin_cm_rtr = 3.0;
 };
 
