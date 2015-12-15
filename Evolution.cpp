@@ -29,6 +29,7 @@ DESolver::DESolver( function <double(const vector<double>&)> f
     assert(rg.size() == _para_num);
 
     _candidates.reserve(_init_num);
+    _results.reserve(_init_num);
     for (unsigned int i = 0; i < _init_num; ++i)
     {
         _candidates.push_back(vector<double>());
@@ -95,7 +96,7 @@ vector<vector<double>> DESolver::_crossover(const Vec2D& x, const Vec2D& v) cons
     return u;
 }
 
-vector<vector<double>> DESolver::_selection(const Vec2D& x, const Vec2D& u) const noexcept
+void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 {
     assert(x.size() == u.size());
     Vec2D s(x.size());
@@ -106,18 +107,17 @@ vector<vector<double>> DESolver::_selection(const Vec2D& x, const Vec2D& u) cons
 
         vector<double> solution_x = x[i];
         vector<double> solution_u = u[i];
-        double result_x = _func(solution_x);
+        double result_x = _results[i];
         double result_u = _func(solution_u);
-        s[i] = result_u < result_x ? u[i] : x[i];
+        _candidates[i]  = result_u < result_x ? u[i] : x[i];
+        _results[i]     = result_u < result_x ? result_u : result_x;
     }
-    return s;
 }
 pair<int, double> DESolver::_find_best(const Vec2D& solutions) const noexcept
 {
     vector<double> results(solutions.size());
-    transform(solutions.begin(), solutions.end(), results.begin(), _func);
-    size_t best_idx    = distance(results.begin(), min_element(results.begin(), results.end()));
-    double best_result = _func(solutions[best_idx]);
+    size_t best_idx    = distance(_results.begin(), min_element(_results.begin(), _results.end()));
+    double best_result = _results[best_idx];
     return make_pair(best_idx, best_result);
 }
 vector<double> DESolver::solver()
@@ -134,13 +134,14 @@ vector<double> DESolver::solver()
             uniform_real_distribution<double> distr(lb, ub);
             _candidates[i][j] = distr(_engine);
         }
+        _results.push_back(_func(_candidates[i]));
     }
 
     for(unsigned int i = 0; i < _iter_num; ++i)
     {
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
-        _candidates = _selection(_candidates, u);
+        _selection(_candidates, u);
     }
     pair<int,double> best_pair   = _find_best(_candidates);
     return _candidates[best_pair.first];

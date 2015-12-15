@@ -22,10 +22,11 @@ class DESolver
 
 
     Vec2D _candidates;
+    std::vector<double> _results;
     std::pair<int, double> _find_best(const Vec2D&) const noexcept;
     Vec2D _mutation(const Vec2D&) const noexcept;
     Vec2D _crossover(const Vec2D&, const Vec2D&) const noexcept;
-    Vec2D _selection(const Vec2D&, const Vec2D&) const noexcept;
+    void _selection(const Vec2D&, const Vec2D&) noexcept;
 
 public:
     DESolver( std::function<double(const std::vector<double>&)>
