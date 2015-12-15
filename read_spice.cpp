@@ -31,8 +31,8 @@ double parse_ma0(const string path)
         cout << "fail to open " << path << endl;
         exit(EXIT_FAILURE);
     }
-    string line;
-    while (getline(ma0_file, line)) {} // we want the last line
+    string tmp_line, line;
+    while (getline(ma0_file, tmp_line)) {line = tmp_line;} // we want the last line
     int idx1 = 0, idx2 = 0;
     while (line[idx1] == ' ')
     {
@@ -48,9 +48,6 @@ double parse_ma0(const string path)
 }
 double run_spice(vector<double>& params)
 {
-    static size_t sim_num = 0; // count simulation number
-    sim_num++;
-    printf("Sim number: %ld\n", sim_num);
     vector<string> names
     {
         "cm"
@@ -95,9 +92,7 @@ double run_spice(vector<double>& params)
 }
 double opt_func(const vector<double>& params) // params without vin_cm
 {
-    // vector<double> sweep_vin_cm{0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0};
-    cout << "Here" << endl;
-    vector<double> sweep_vin_cm{1.0};
+    vector<double> sweep_vin_cm{0.3, 1.2, 3.0};
     double gain = numeric_limits<double>::infinity();
     for(auto vin_cm : sweep_vin_cm)
     {
@@ -107,7 +102,10 @@ double opt_func(const vector<double>& params) // params without vin_cm
         if(this_gain < gain)
             gain = this_gain;
     }
-    return gain;
+    static long stat = 0;
+    stat ++;
+    printf("call: %ld,  sim: %ld, gain = %g dB\n", stat, stat * sweep_vin_cm.size(), gain);
+    return -1 * gain;
 }
 int main()
 {

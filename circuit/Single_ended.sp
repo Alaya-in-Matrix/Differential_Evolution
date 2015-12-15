@@ -25,8 +25,8 @@ vs      100         0       dc=0        ac=1
 
 vss         vss         0       0
 
-.ac   dec 100 1 10g
-.meas ac  gain max  vdb(vo_ac)   from=1 to=10g
+.ac   dec 100 1 1g
+.meas ac  gain max  vdb(vo_ac)   from=1 to=1g
 ** .meas ac  ugf  when vdb(vo_ac)=0
 ** .meas ac  pm   find vp(vo_ac)    at=ugf
 ** .meas ac  gain_rtr max vdb(vo_rtr) from =1 to=10g
