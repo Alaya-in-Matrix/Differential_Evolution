@@ -7,6 +7,7 @@
 #include <cassert>
 #include <utility>
 #include <limits>
+#include <unordered_map>
 #include "Evolution.h"
 
 using namespace std;
@@ -59,32 +60,43 @@ void gen_param(const vector<string>& names, const vector <double>& values, const
     }
     ofile.close();
 }
-double parse_ma0(const string path)
+unordered_map<string, double> parse_hspice_measure_file(string path)
 {
-    ifstream ma0_file;
-    ma0_file.open(path);
-    if (!ma0_file.is_open())
+    unordered_map<string, double> result;
+    ifstream ma0_file(path);
+    string ignore_lines;
+    while (getline(ma0_file, ignore_lines))
     {
-        cout << "fail to open " << path << endl;
+        // to upper ignore lines
+        const string title_line = ".TITLE";
+        for (size_t i = 0; i < title_line.size(); ++i)
+            ignore_lines[i] = toupper(ignore_lines[i]);
+
+        // check whether is this line is a title line
+        if (ignore_lines.size() >= title_line.size() && ignore_lines.substr(0, title_line.size()) == title_line)
+            break;
+    }
+    vector<string> names;
+    vector<double> values;
+    string token;
+    double value;
+    while (ma0_file >> token)
+    {
+        names.push_back(token);
+        if (token == "alter#") break;
+    }
+    while (ma0_file >> value)
+    {
+        values.push_back(value);
+    }
+    if(names.size() != values.size())
+    {
+        cerr << "name number: " << names.size() << ", value number: " << values.size() << endl;
         exit(EXIT_FAILURE);
     }
-    string tmp_line, line;
-    while (getline(ma0_file, tmp_line))
-    {
-        line = tmp_line;   // we want the last line
-    }
-    int idx1 = 0, idx2 = 0;
-    while (line[idx1] == ' ')
-    {
-        idx1++;
-        idx2 = idx1;
-    }
-    while (line[idx2] != ' ')
-    {
-        idx2 ++;
-    }
-    string gain_str = line.substr(idx1, idx2 - idx1);
-    return atof(gain_str.c_str());
+    for (size_t i = 0; i < names.size(); ++i)
+        result.insert(make_pair(names[i], values[i]));
+    return result;
 }
 double run_spice(vector<double>& params)
 {
@@ -94,7 +106,8 @@ double run_spice(vector<double>& params)
     static int satisfy_id = 0;
     if (ret == 0)
     {
-        return parse_ma0("./circuit/Single_ended.ma0");
+        unordered_map<string, double> measured = parse_hspice_measure_file("./circuit/Single_ended.ma0");
+        return measured["gain"];
     }
     else
         return -1 * numeric_limits<double>::infinity();
@@ -170,3 +183,4 @@ int main()
     printf("Result is %g dB\n", -1 * opt_func(solution));
     return 0;
 }
+
