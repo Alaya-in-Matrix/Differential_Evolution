@@ -6,6 +6,7 @@
 #include <vector>
 #include <cassert>
 #include <utility>
+#include <algorithm>
 #include <limits>
 #include <unordered_map>
 #include "Evolution.h"
@@ -47,6 +48,7 @@ vector<string> names
     , "w8"
     , "w9"
     , "vin_cm"
+    , "vin_cm_rr"
 };
 void gen_param(const vector<string>& names, const vector <double>& values, const string path)
 {
@@ -79,56 +81,96 @@ unordered_map<string, double> parse_hspice_measure_file(string path)
     vector<string> names;
     vector<double> values;
     string token;
-    double value;
+    bool failed = false;
     while (ma0_file >> token)
     {
         names.push_back(token);
         if (token == "alter#") break;
     }
-    while (ma0_file >> value)
+    while (ma0_file >> token)
     {
-        values.push_back(value);
+        if (token == "failed")
+        {
+            failed = true;
+            break;
+        }
+        values.push_back(atof(token.c_str()));
     }
-    if(names.size() != values.size())
+    if (failed)
+        result["failed"] = 1;
+    else
     {
-        cerr << "name number: " << names.size() << ", value number: " << values.size() << endl;
-        exit(EXIT_FAILURE);
+        result["failed"] = 0;
+        for (size_t i = 0; i < names.size(); ++i)
+            result.insert(make_pair(names[i], values[i]));
     }
-    for (size_t i = 0; i < names.size(); ++i)
-        result.insert(make_pair(names[i], values[i]));
     return result;
 }
-double run_spice(vector<double>& params)
+unordered_map<string, double> run_spice(vector<double>& params)
 {
     string para_path = "./circuit/param.sp";
     gen_param(names, params, para_path);
     int ret = system("cd circuit && hspice64 ./Single_ended.sp > output.info 2>&1");
-    static int satisfy_id = 0;
+    unordered_map<string, double> measured;
     if (ret == 0)
     {
-        unordered_map<string, double> measured = parse_hspice_measure_file("./circuit/Single_ended.ma0");
-        return measured["gain"];
+        measured = parse_hspice_measure_file("./circuit/Single_ended.ma0");
     }
     else
-        return -1 * numeric_limits<double>::infinity();
+    {
+        cerr << "Fail to run hspice" << endl;
+        for (auto p : params)
+            cerr << p << endl;
+        measured["gain"] = -1 * numeric_limits<double>::infinity();
+        measured["pm"]   = -180;
+        measured["ugf"]  = 0;
+    }
+    return measured;
 }
 double opt_func(const vector<double>& params) // params without vin_cm
 {
     vector<double> sweep_vin_cm{0.3, 1.2, 3.0};
-    double gain = numeric_limits<double>::infinity();
+    // double gain    = numeric_limits<double>::infinity();
+    // double penalty = numeric_limits<double>::infinity();
+    vector<double> gain_vec;
+    vector<double> penalty_vec;
     for (auto vin_cm : sweep_vin_cm)
     {
         vector<double> new_params = params;
         new_params.push_back(vin_cm);
-        double this_gain = run_spice(new_params);
-        if (this_gain < gain)
-            gain = this_gain;
+        auto measured = run_spice(new_params);
+        if (measured["failed"] == 0)
+        {
+            double this_gain    = measured["gain"];
+            double this_gain_rr = measured["gain_rr"];
+            double this_ugf     = measured["ugf"] / 1e6; // MHz
+            double this_pm      = measured["pm"] + 180;
+            if (this_gain_rr < this_gain)
+            {
+                this_gain = this_gain_rr;
+            }
+
+            double this_penalty_ugf = this_ugf > 200 ? 0 : 200 - this_ugf;
+            double this_penalty_pm  = this_pm  > 60  ? 0 : 60  - this_pm;
+            double this_penalty     = this_penalty_ugf + this_penalty_pm;
+
+            gain_vec.push_back(this_gain);
+            penalty_vec.push_back(this_penalty);
+        }
+        else
+        {
+            gain_vec.push_back(-1 * numeric_limits<double>::infinity());
+            penalty_vec.push_back(numeric_limits<double>::infinity());
+        }
     }
+    double gain    = *(min_element(gain_vec.begin(), gain_vec.end()));
+    double penalty = *(min_element(penalty_vec.begin(), penalty_vec.end()));
+    double fom     = gain - 3 * penalty;
     static long stat = 0;
     char buf[100];
     stat ++;
-    printf("call: %ld,  sim: %ld, gain = %g dB\n", stat, stat * sweep_vin_cm.size(), gain);
-    if (gain > 70)
+    printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
+    if (fom > 70)
     {
         sprintf(buf, "out/good_%ld_%g", stat, gain);
         string stat_name(buf);
@@ -136,7 +178,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
         new_params.push_back(numeric_limits<double>::infinity());
         gen_param(names, new_params, stat_name);
     }
-    return -1 * gain;
+    return -1 * fom;
 }
 int main()
 {
@@ -175,7 +217,8 @@ int main()
         , make_pair(0.4, 20)
         , make_pair(0.4, 20)
         , make_pair(0.4, 20)
-    }; //without vin_cm
+        , make_pair(0, 3.3)
+    }; //without vin_cm_rtr
     const unsigned int iter_num = 600;
     const unsigned int para_num = ranges.size();
     DESolver desolver(opt_func, ranges, iter_num, para_num);
@@ -183,4 +226,3 @@ int main()
     printf("Result is %g dB\n", -1 * opt_func(solution));
     return 0;
 }
-
