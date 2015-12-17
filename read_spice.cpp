@@ -144,7 +144,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
             double this_gain    = measured["gain"];
             double this_gain_rr = measured["gain_rr"];
             double this_ugf     = measured["ugf"] / 1e6; // MHz
-            double this_pm      = measured["pm"] + 180;
+            double this_pm      = measured["pm"] > 0 ? measured["pm"] - 180 : measured["pm"] + 180;
             if (this_gain_rr < this_gain)
             {
                 this_gain = this_gain_rr;
