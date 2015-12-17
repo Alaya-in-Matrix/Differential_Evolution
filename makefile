@@ -1,6 +1,6 @@
 CXX   = g++
 FLAGS = -std=c++11 -O3
-EXE   = spice 
+EXE   = de-spice 
 SRC   = Evolution.cpp read_spice.cpp
 OBJ   = obj/Evolution.o obj/read_spice.o
 

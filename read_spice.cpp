@@ -129,7 +129,7 @@ unordered_map<string, double> run_spice(vector<double>& params)
 }
 double opt_func(const vector<double>& params) // params without vin_cm
 {
-    vector<double> sweep_vin_cm{0.3, 1.2, 3.0};
+    vector<double> sweep_vin_cm{0, 1.1, 3.3};
     // double gain    = numeric_limits<double>::infinity();
     // double penalty = numeric_limits<double>::infinity();
     vector<double> gain_vec;
@@ -170,7 +170,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
     char buf[100];
     stat ++;
     printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
-    if (fom > 70)
+    if (fom > 70 && penalty < 1)
     {
         sprintf(buf, "out/good_%ld_%g", stat, gain);
         string stat_name(buf);
