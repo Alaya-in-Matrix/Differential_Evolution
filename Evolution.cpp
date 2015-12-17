@@ -11,7 +11,7 @@
 #include "Evolution.h"
 #include "util.h"
 using namespace std;
-mt19937_64 _engine(0);
+mt19937_64 _engine(random_device{}());
 DESolver::DESolver( function <double(const vector<double>&)> f
                     , RangeVec rg
                     , unsigned int iter_num
@@ -100,7 +100,7 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 {
     assert(x.size() == u.size());
     Vec2D s(x.size());
-    for(size_t i = 0; i < x.size(); ++i)
+    for (size_t i = 0; i < x.size(); ++i)
     {
         assert(x[i].size() == _para_num);
         assert(u[i].size() == _para_num);
@@ -118,16 +118,18 @@ pair<int, double> DESolver::_find_best(const Vec2D& solutions) const noexcept
     vector<double> results(solutions.size());
     size_t best_idx    = distance(_results.begin(), min_element(_results.begin(), _results.end()));
     double best_result = _results[best_idx];
+    printf("Current Best: (%zu, %g)\n", best_idx, best_result);
+    fflush(stdout);
     return make_pair(best_idx, best_result);
 }
 vector<double> DESolver::solver()
 {
     _candidates.clear();
     _candidates.reserve(_init_num);
-    for(unsigned int i = 0; i < _init_num; ++i)
+    for (unsigned int i = 0; i < _init_num; ++i)
     {
         _candidates.push_back(vector<double>(_para_num));
-        for(unsigned int j = 0; j < _para_num; ++j)
+        for (unsigned int j = 0; j < _para_num; ++j)
         {
             double lb = _ranges[j].first;
             double ub = _ranges[j].second;
@@ -137,12 +139,12 @@ vector<double> DESolver::solver()
         _results.push_back(_func(_candidates[i]));
     }
 
-    for(unsigned int i = 0; i < _iter_num; ++i)
+    for (unsigned int i = 0; i < _iter_num; ++i)
     {
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
     }
-    pair<int,double> best_pair   = _find_best(_candidates);
+    pair<int, double> best_pair   = _find_best(_candidates);
     return _candidates[best_pair.first];
 }

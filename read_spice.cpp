@@ -170,6 +170,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
     char buf[100];
     stat ++;
     printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
+    fflush(stdout);
     if (fom > 70 && penalty < 1)
     {
         sprintf(buf, "out/good_%ld_%g", stat, gain);
