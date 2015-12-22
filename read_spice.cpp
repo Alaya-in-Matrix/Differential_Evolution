@@ -173,6 +173,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
     fflush(stdout);
     if (fom > 70 && penalty < 1)
     {
+        system("mkdir -p out");
         sprintf(buf, "out/good_%ld_%g", stat, gain);
         string stat_name(buf);
         vector<double> new_params = params;
