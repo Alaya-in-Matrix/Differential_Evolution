@@ -198,7 +198,7 @@ double opt_func(const vector<double>& params) // params without vin_cm
     }
     return -1 * fom;
 }
-int main()
+int main(int arg_num, char** args)
 {
     vector<pair<double, double>> ranges
     {
@@ -245,7 +245,12 @@ int main()
         cerr << "Can't mkdir" << endl;
         exit(0);
     }
-    omp_set_num_threads(4);
+    int thread_num = 2;
+    if(arg_num > 1)
+    {
+        thread_num = atoi(args[1]);
+    }
+    omp_set_num_threads(thread_num);
     DESolver desolver(opt_func, ranges, iter_num, para_num);
     vector<double> solution = desolver.solver();
     printf("Result is %g dB\n", -1 * opt_func(solution));
