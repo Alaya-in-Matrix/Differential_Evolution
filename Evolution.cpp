@@ -17,12 +17,13 @@ DESolver::DESolver( function <double(const vector<double>&)> f
                     , RangeVec rg
                     , unsigned int iter_num
                     , unsigned int para_num
+                    , unsigned int init_num
                   )
     : _func(f)
     , _ranges(rg)
     , _iter_num(iter_num)
     , _para_num(para_num)
-    , _init_num(para_num * 11 - 1)
+    , _init_num(init_num)
     , _cr(0.8)
     , _fmu(0.75)
     , _fsigma(0.25)
@@ -101,7 +102,7 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 {
     assert(x.size() == u.size());
     Vec2D s(x.size());
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < x.size(); ++i)
     {
         assert(x[i].size() == _para_num);
@@ -140,7 +141,7 @@ vector<double> DESolver::solver()
             _candidates[i][j] = distr(_engine);
         }
     }
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for (unsigned int i = 0; i < _init_num; ++i)
     {
         _results[i] = (_func(_candidates[i]));

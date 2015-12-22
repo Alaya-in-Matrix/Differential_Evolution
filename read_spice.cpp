@@ -136,19 +136,20 @@ double opt_func(const vector<double>& params) // params without vin_cm
     vector<double> sweep_vin_cm{0, 1.1, 3.3};
     vector<double> gain_vec;
     vector<double> penalty_vec;
-    static long stat = 0;
+    static long func_stat = 0;
+    long stat;
     string netlist_path;
     #pragma omp critical
+    func_stat ++;
+
+    stat = func_stat;
+    netlist_path = "workspace/" + to_string(stat);
+    string cmd   = "mkdir -p " + netlist_path + " && cp -r circuit/* " + netlist_path;
+    int ret      = system(cmd.c_str());
+    if (ret != 0)
     {
-        stat ++;
-        netlist_path = "workspace/" + to_string(stat);
-        string cmd   = "mkdir -p " + netlist_path + " && cp -r circuit/* " + netlist_path;
-        int ret      = system(cmd.c_str());
-        if (ret != 0)
-        {
-            cerr << "Fail to mkdir " << netlist_path << endl;
-            exit(0);
-        }
+        cerr << "Fail to mkdir " << netlist_path << endl;
+        exit(0);
     }
     for (auto vin_cm : sweep_vin_cm)
     {
@@ -183,11 +184,8 @@ double opt_func(const vector<double>& params) // params without vin_cm
     double penalty = *(min_element(penalty_vec.begin(), penalty_vec.end()));
     double fom     = gain - 3 * penalty;
     char buf[100];
-    #pragma omp critical
-    {
-        printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
-        fflush(stdout);
-    }
+    printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
+    fflush(stdout);
     if (fom > 70 && penalty < 1)
     {
         sprintf(buf, "out/good_%ld_%g", stat, gain);
@@ -239,6 +237,7 @@ int main(int arg_num, char** args)
     }; //without vin_cm_rtr
     const unsigned int iter_num = 600;
     const unsigned int para_num = ranges.size();
+    const unsigned int init_num = 11 * para_num - 1;
     int mkdir_ret = system ("mkdir -p out/ && mkdir -p workspace");
     if (mkdir_ret != 0)
     {
@@ -251,7 +250,7 @@ int main(int arg_num, char** args)
         thread_num = atoi(args[1]);
     }
     omp_set_num_threads(thread_num);
-    DESolver desolver(opt_func, ranges, iter_num, para_num);
+    DESolver desolver(opt_func, ranges, iter_num, para_num, init_num);
     vector<double> solution = desolver.solver();
     printf("Result is %g dB\n", -1 * opt_func(solution));
     return 0;

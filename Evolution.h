@@ -33,6 +33,7 @@ public:
               , RangeVec
               , unsigned int iter_num
               , unsigned int para_num
+              , unsigned int init_num
             );
     std::vector<double> solver();
 };
