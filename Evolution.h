@@ -9,7 +9,7 @@ class DESolver
     // maybe I shouldn't use 2d vector, I should use 2D array?
     typedef std::vector<std::vector<double> > Vec2D;
     typedef std::vector<std::pair<double, double> > RangeVec;
-    const std::function<double(const std::vector<double>&)> _func;
+    const std::function<double(unsigned int idx, const std::vector<double>&)> _func;
     const RangeVec _ranges;
     const unsigned int _iter_num;
     const unsigned int _para_num;
@@ -29,7 +29,7 @@ class DESolver
     void _selection(const Vec2D&, const Vec2D&) noexcept;
 
 public:
-    DESolver( std::function<double(const std::vector<double>&)>
+    DESolver( std::function<double(unsigned int, const std::vector<double>&)>
               , RangeVec
               , unsigned int iter_num
               , unsigned int para_num

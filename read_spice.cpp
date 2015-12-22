@@ -112,7 +112,8 @@ unordered_map<string, double> run_spice(string folder, vector<double>& params)
     string para_path    = folder + "/param.sp";
     string netlist_path = folder + "/Single_ended.sp";
     string ma0_path     = folder + "/Single_ended.ma0";
-    string hspice_cmd   = "cd " + folder + " && hspice64 ./Single_ended.sp > output.info 2>&1";
+    string output_path  = folder + "/output.info";
+    string hspice_cmd   = "hspice64 " + netlist_path + " -o " + folder + "> " + output_path + " 2>&1";
     gen_param(names, params, para_path);
     int ret = system(hspice_cmd.c_str());
     unordered_map<string, double> measured;
@@ -131,26 +132,15 @@ unordered_map<string, double> run_spice(string folder, vector<double>& params)
     }
     return measured;
 }
-double opt_func(const vector<double>& params) // params without vin_cm
+double opt_func(unsigned int idx, const vector<double>& params) // params without vin_cm
 {
     vector<double> sweep_vin_cm{0, 1.1, 3.3};
     vector<double> gain_vec;
     vector<double> penalty_vec;
-    static long func_stat = 0;
-    long stat;
     string netlist_path;
     #pragma omp critical
-    func_stat ++;
 
-    stat = func_stat;
-    netlist_path = "workspace/" + to_string(stat);
-    string cmd   = "mkdir -p " + netlist_path + " && cp -r circuit/* " + netlist_path;
-    int ret      = system(cmd.c_str());
-    if (ret != 0)
-    {
-        cerr << "Fail to mkdir " << netlist_path << endl;
-        exit(0);
-    }
+    netlist_path = "workspace/" + to_string(idx);
     for (auto vin_cm : sweep_vin_cm)
     {
         vector<double> new_params = params;
@@ -178,17 +168,18 @@ double opt_func(const vector<double>& params) // params without vin_cm
         {
             gain_vec.push_back(-1 * numeric_limits<double>::infinity());
             penalty_vec.push_back(numeric_limits<double>::infinity());
+            break;
         }
     }
     double gain    = *(min_element(gain_vec.begin(), gain_vec.end()));
     double penalty = *(min_element(penalty_vec.begin(), penalty_vec.end()));
     double fom     = gain - 3 * penalty;
     char buf[100];
-    printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
+    printf("idx: %d, gain = %g dB, penalty = %g, fom = %g\n", idx, gain, penalty, fom);
     fflush(stdout);
     if (fom > 70 && penalty < 1)
     {
-        sprintf(buf, "out/good_%ld_%g", stat, gain);
+        sprintf(buf, "out/good_%d_%g", idx, gain);
         string stat_name(buf);
         vector<double> new_params = params;
         new_params.push_back(numeric_limits<double>::infinity());
@@ -235,23 +226,31 @@ int main(int arg_num, char** args)
         , make_pair(0.4, 20)
         , make_pair(0, 3.3)
     }; //without vin_cm_rtr
+    int thread_num = 2;
+    if (arg_num > 1)
+    {
+        thread_num = atoi(args[1]);
+    }
+    omp_set_num_threads(thread_num);
+
     const unsigned int iter_num = 600;
     const unsigned int para_num = ranges.size();
     const unsigned int init_num = 11 * para_num - 1;
     int mkdir_ret = system ("mkdir -p out/ && mkdir -p workspace");
+    #pragma omp parallel for schedule(static)
+    for (unsigned int i = 0; i < init_num; ++i)
+    {
+        string path = "workspace/" + to_string(i);
+        string cmd = "mkdir -p " + path + " && cp circuit/* " + path;
+        system(cmd.c_str());
+    }
     if (mkdir_ret != 0)
     {
         cerr << "Can't mkdir" << endl;
         exit(0);
     }
-    int thread_num = 2;
-    if(arg_num > 1)
-    {
-        thread_num = atoi(args[1]);
-    }
-    omp_set_num_threads(thread_num);
     DESolver desolver(opt_func, ranges, iter_num, para_num, init_num);
     vector<double> solution = desolver.solver();
-    printf("Result is %g dB\n", -1 * opt_func(solution));
+    // printf("Result is %g dB\n", -1 * opt_func(solution));
     return 0;
 }

@@ -2,12 +2,13 @@
 use strict;
 use warnings;
 use 5.010;
-
+system "clear";
 system "cat run.log | grep -i best";
 print "------------------------------------------\n";
 system "tail run.log -n 3";
 print "------------------------------------------\n";
 system "cat run.log | grep 'penalty = 0' > current_bests";
+system "wc -l run.log";
 open my $fh, "<", "current_bests" or die "can't open file:$!\n";
 my @contents;
 while(my $line = <$fh>)

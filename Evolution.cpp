@@ -13,7 +13,7 @@
 #include "util.h"
 using namespace std;
 mt19937_64 _engine(random_device{}());
-DESolver::DESolver( function <double(const vector<double>&)> f
+DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
                     , RangeVec rg
                     , unsigned int iter_num
                     , unsigned int para_num
@@ -51,7 +51,7 @@ vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcep
     pair<int, double> best = _find_best(solutions);
     size_t best_idx        = best.first;
     uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1); // 其实 solutions.size() == _init_num?
-    static normal_distribution<double> f_distr(_fmu, _fsigma);
+    normal_distribution<double> f_distr(_fmu, _fsigma);
     const auto& x_best = solutions[best_idx];
 
     Vec2D v;
@@ -82,6 +82,7 @@ vector<vector<double>> DESolver::_crossover(const Vec2D& x, const Vec2D& v) cons
     uniform_int_distribution<unsigned int>   distr_randn(1, _para_num);
 
     Vec2D u(x.size());
+    #pragma omp parallel for
     for (size_t i = 0; i < solution_num; ++i)
     {
         assert(x[i].size() == _para_num);
@@ -102,7 +103,7 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 {
     assert(x.size() == u.size());
     Vec2D s(x.size());
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(dynamic, 2)
     for (size_t i = 0; i < x.size(); ++i)
     {
         assert(x[i].size() == _para_num);
@@ -111,7 +112,7 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
         vector<double> solution_x = x[i];
         vector<double> solution_u = u[i];
         double result_x = _results[i];
-        double result_u = _func(solution_u);
+        double result_u = _func(i, solution_u);
         _candidates[i]  = result_u < result_x ? u[i] : x[i];
         _results[i]     = result_u < result_x ? result_u : result_x;
     }
@@ -141,10 +142,10 @@ vector<double> DESolver::solver()
             _candidates[i][j] = distr(_engine);
         }
     }
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(dynamic, 2)
     for (unsigned int i = 0; i < _init_num; ++i)
     {
-        _results[i] = (_func(_candidates[i]));
+        _results[i] = (_func(i, _candidates[i]));
     }
 
     for (unsigned int i = 0; i < _iter_num; ++i)
