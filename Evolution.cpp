@@ -7,6 +7,7 @@
 #include <cassert>
 #include <numeric>
 #include <limits>
+#include <omp.h>
 
 #include "Evolution.h"
 #include "util.h"
@@ -100,6 +101,7 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 {
     assert(x.size() == u.size());
     Vec2D s(x.size());
+    #pragma omp parallel for
     for (size_t i = 0; i < x.size(); ++i)
     {
         assert(x[i].size() == _para_num);
@@ -126,6 +128,7 @@ vector<double> DESolver::solver()
 {
     _candidates.clear();
     _candidates.reserve(_init_num);
+    _results = vector<double>(_init_num);
     for (unsigned int i = 0; i < _init_num; ++i)
     {
         _candidates.push_back(vector<double>(_para_num));
@@ -136,7 +139,11 @@ vector<double> DESolver::solver()
             uniform_real_distribution<double> distr(lb, ub);
             _candidates[i][j] = distr(_engine);
         }
-        _results.push_back(_func(_candidates[i]));
+    }
+    #pragma omp parallel for
+    for (unsigned int i = 0; i < _init_num; ++i)
+    {
+        _results[i] = (_func(_candidates[i]));
     }
 
     for (unsigned int i = 0; i < _iter_num; ++i)

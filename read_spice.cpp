@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <omp.h>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -106,15 +107,18 @@ unordered_map<string, double> parse_hspice_measure_file(string path)
     }
     return result;
 }
-unordered_map<string, double> run_spice(vector<double>& params)
+unordered_map<string, double> run_spice(string folder, vector<double>& params)
 {
-    string para_path = "./circuit/param.sp";
+    string para_path    = folder + "/param.sp";
+    string netlist_path = folder + "/Single_ended.sp";
+    string ma0_path     = folder + "/Single_ended.ma0";
+    string hspice_cmd   = "cd " + folder + " && hspice64 ./Single_ended.sp > output.info 2>&1";
     gen_param(names, params, para_path);
-    int ret = system("cd circuit && hspice64 ./Single_ended.sp > output.info 2>&1");
+    int ret = system(hspice_cmd.c_str());
     unordered_map<string, double> measured;
     if (ret == 0)
     {
-        measured = parse_hspice_measure_file("./circuit/Single_ended.ma0");
+        measured = parse_hspice_measure_file(ma0_path);
     }
     else
     {
@@ -130,15 +134,27 @@ unordered_map<string, double> run_spice(vector<double>& params)
 double opt_func(const vector<double>& params) // params without vin_cm
 {
     vector<double> sweep_vin_cm{0, 1.1, 3.3};
-    // double gain    = numeric_limits<double>::infinity();
-    // double penalty = numeric_limits<double>::infinity();
     vector<double> gain_vec;
     vector<double> penalty_vec;
+    static long stat = 0;
+    string netlist_path;
+    #pragma omp critical
+    {
+        stat ++;
+        netlist_path = "workspace/" + to_string(stat);
+        string cmd   = "mkdir -p " + netlist_path + " && cp -r circuit/* " + netlist_path;
+        int ret      = system(cmd.c_str());
+        if (ret != 0)
+        {
+            cerr << "Fail to mkdir " << netlist_path << endl;
+            exit(0);
+        }
+    }
     for (auto vin_cm : sweep_vin_cm)
     {
         vector<double> new_params = params;
         new_params.push_back(vin_cm);
-        auto measured = run_spice(new_params);
+        auto measured = run_spice(netlist_path, new_params);
         if (measured["failed"] == 0)
         {
             double this_gain    = measured["gain"];
@@ -166,14 +182,14 @@ double opt_func(const vector<double>& params) // params without vin_cm
     double gain    = *(min_element(gain_vec.begin(), gain_vec.end()));
     double penalty = *(min_element(penalty_vec.begin(), penalty_vec.end()));
     double fom     = gain - 3 * penalty;
-    static long stat = 0;
     char buf[100];
-    stat ++;
-    printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
-    fflush(stdout);
+    #pragma omp critical
+    {
+        printf("call: %ld,  sim: %ld, gain = %g dB, penalty = %g, fom = %g\n", stat, stat * sweep_vin_cm.size(), gain, penalty, fom);
+        fflush(stdout);
+    }
     if (fom > 70 && penalty < 1)
     {
-        system("mkdir -p out");
         sprintf(buf, "out/good_%ld_%g", stat, gain);
         string stat_name(buf);
         vector<double> new_params = params;
@@ -223,6 +239,13 @@ int main()
     }; //without vin_cm_rtr
     const unsigned int iter_num = 600;
     const unsigned int para_num = ranges.size();
+    int mkdir_ret = system ("mkdir -p out/ && mkdir -p workspace");
+    if (mkdir_ret != 0)
+    {
+        cerr << "Can't mkdir" << endl;
+        exit(0);
+    }
+    omp_set_num_threads(4);
     DESolver desolver(opt_func, ranges, iter_num, para_num);
     vector<double> solution = desolver.solver();
     printf("Result is %g dB\n", -1 * opt_func(solution));
