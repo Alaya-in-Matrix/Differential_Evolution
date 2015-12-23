@@ -11,6 +11,7 @@
 #include <limits>
 #include <unordered_map>
 #include "Evolution.h"
+#include "hspice_util.h"
 
 using namespace std;
 vector<string> names
@@ -51,62 +52,6 @@ vector<string> names
     , "vin_cm"
     , "vin_cm_rr"
 };
-void gen_param(const vector<string>& names, const vector <double>& values, const string path)
-{
-    assert(names.size() == values.size());
-    ofstream ofile;
-    ofile.open(path);
-    assert(ofile.is_open());
-    for (size_t i = 0; i < names.size(); ++i)
-    {
-        ofile << ".param " << names[i] << " = " << values[i] << endl;
-    }
-    ofile.close();
-}
-unordered_map<string, double> parse_hspice_measure_file(string path)
-{
-    unordered_map<string, double> result;
-    ifstream ma0_file(path);
-    string ignore_lines;
-    while (getline(ma0_file, ignore_lines))
-    {
-        // to upper ignore lines
-        const string title_line = ".TITLE";
-        for (size_t i = 0; i < title_line.size(); ++i)
-            ignore_lines[i] = toupper(ignore_lines[i]);
-
-        // check whether is this line is a title line
-        if (ignore_lines.size() >= title_line.size() && ignore_lines.substr(0, title_line.size()) == title_line)
-            break;
-    }
-    vector<string> names;
-    vector<double> values;
-    string token;
-    bool failed = false;
-    while (ma0_file >> token)
-    {
-        names.push_back(token);
-        if (token == "alter#") break;
-    }
-    while (ma0_file >> token)
-    {
-        if (token == "failed")
-        {
-            failed = true;
-            break;
-        }
-        values.push_back(atof(token.c_str()));
-    }
-    if (failed)
-        result["failed"] = 1;
-    else
-    {
-        result["failed"] = 0;
-        for (size_t i = 0; i < names.size(); ++i)
-            result.insert(make_pair(names[i], values[i]));
-    }
-    return result;
-}
 unordered_map<string, double> run_spice(string folder, vector<double>& params)
 {
     string para_path    = folder + "/param.sp";
@@ -241,7 +186,7 @@ int main(int arg_num, char** args)
     for (unsigned int i = 0; i < init_num; ++i)
     {
         string path = "workspace/" + to_string(i);
-        string cmd = "mkdir -p " + path + " && cp circuit/* " + path;
+        string cmd = "mkdir -p " + path + " && cp circuit/weixin/* " + path;
         system(cmd.c_str());
     }
     if (mkdir_ret != 0)
