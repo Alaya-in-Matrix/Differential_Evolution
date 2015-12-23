@@ -5,14 +5,15 @@ SRC   = Evolution.cpp \
 		hspice_util.cpp
 OBJ   = obj/Evolution.o \
 		obj/weixin.o \
+		obj/pengbo.o \
 		obj/hspice_util.o
 
 .PHONY: all
 all:
-	make liminghua
+	make pengbo
 	make weixin
 
-liminghua: obj/Evolution.o obj/hspice_util.o obj/liminghua.o
+pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
