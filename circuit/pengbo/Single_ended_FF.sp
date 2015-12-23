@@ -29,14 +29,14 @@ rsw1 vin_sw vin_sw- 1meg
 vin_sw vin_sw 0 vin_cm
 vin_sw+ vin_sw+ 0 vin_cm
 
-xpsr vin_psr+ vo_psr vo_psr vdd_psrac vss opamp
-vin_psr+ vin_psr+ 0 vin_cm
+** xpsr vin_psr+ vo_psr vo_psr vdd_psrac vss opamp
+** vin_psr+ vin_psr+ 0 vin_cm
 
-xcmrr vin_cmrr+ vin_cmrr- vo_cmrr vdd_cmrr vss opamp
-e_cmrr+ vin_cmrr+ vcm_cmrr 100cmrr 0 0.5
-e_cmrr- vin_cmrr- vo_cmrr 100cmrr 0 0.5
-vcm_cmrr vcm_cmrr 0 dc=vin_cm
-vs_cmrr 100cmrr 0 dc=0 ac=1
+** xcmrr vin_cmrr+ vin_cmrr- vo_cmrr vdd_cmrr vss opamp
+** e_cmrr+ vin_cmrr+ vcm_cmrr 100cmrr 0 0.5
+** e_cmrr- vin_cmrr- vo_cmrr 100cmrr 0 0.5
+** vcm_cmrr vcm_cmrr 0 dc=vin_cm
+** vs_cmrr 100cmrr 0 dc=0 ac=1
 
 vdd_ac vdd_ac 0 vdd_v
 vdd_tr vdd_tr 0 vdd_v
@@ -58,17 +58,17 @@ vs 100 0 dc=0 ac=1
 .dc vin_sw 0 vdd_v vin_incre 
 .print v(vo_sw)
 
-.ac dec 100 1 1000g
-.meas ac gain max vdb(vo_ac) from=1 to=1000g 
+.ac dec 100 1 1g
+.meas ac gain max vdb(vo_ac) from=1 to=1g 
 .meas ac ugf when vdb(vo_ac)=0
 .meas ac pm find vp(vo_ac) at=ugf
 .meas ac gm find vdb(vo_ac) when vp(vo_ac)=-178 
-.meas ac psr min vdb(vo_psr) from=1 to=1000g 
-.meas ac cmrr min vdb(vo_cmrr) from=1 to=1000g 
+** .meas ac psr min vdb(vo_psr) from=1 to=1000g 
+** .meas ac cmrr min vdb(vo_cmrr) from=1 to=1000g 
 
 
-vpulse vin_tr+ 0 pulse (vin_low vin_high 0 risetime falltime 'period/2' period)
-.trans 'period/10000' 'period*1'
-.print v(vin_tr+) v(vo_tr)
+** vpulse vin_tr+ 0 pulse (vin_low vin_high 0 risetime falltime 'period/2' period)
+** .trans 'period/10000' 'period*1'
+** .print v(vin_tr+) v(vo_tr)
 
 .end
