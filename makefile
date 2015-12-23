@@ -7,6 +7,9 @@ OBJ   = obj/Evolution.o \
 		obj/weixin.o \
 		obj/hspice_util.o
 
+liminghua: obj/Evolution.o obj/hspice_util.o obj/liminghua.o
+	$(CXX) $^ -o $@ $(FLAGS)
+
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
