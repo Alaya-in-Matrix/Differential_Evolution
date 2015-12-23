@@ -1,14 +1,13 @@
 CXX   = g++
 FLAGS = -std=c++11 -O3 -fopenmp
-EXE   = de-spice 
 SRC   = Evolution.cpp \
-		read_spice.cpp \
+		weixin.cpp \
 		hspice_util.cpp
 OBJ   = obj/Evolution.o \
-		obj/read_spice.o \
+		obj/weixin.o \
 		obj/hspice_util.o
 
-$(EXE):$(OBJ)
+weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 obj/%.o:%.cpp
