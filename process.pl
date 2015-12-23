@@ -24,7 +24,7 @@ for(my $i = 0; $i < ($#sorted < 20 ? $#sorted + 1 : 20); ++$i)
 }
 print "============================================\n";
 printf "MSP best:\n";
-system "cat ../tangzhangwen_course_project/spec.log | grep -i best";
+system "cat ~/tmp/tangzhangwen_course_project-gain-no-constraint/spec.log | grep -i best";
 print "--------------------------------------------\n";
 printf "MSP Iter\n";
-system "tail ../tangzhangwen_course_project/spec.log -n 3";
+system "tail ~/tmp/tangzhangwen_course_project-gain-no-constraint/spec.log -n 3";
