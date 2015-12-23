@@ -16,161 +16,157 @@
 using namespace std;
 vector<string> names
 {
-    "cm"
-    , "ival"
-    , "l_fixed"
-    , "w10"
+    "ib"
+    , "wa2"
+    , "wb1"
+    , "wb2"
+    , "w1"
+    , "w3"
+    , "w5"
+    , "w7"
+    , "w9"
     , "w11"
     , "w12"
+    , "w16"
     , "w13"
     , "w14"
     , "w15"
-    , "w16_18"
-    , "w17_19"
-    , "w1_2"
-    , "w20"
-    , "w21"
-    , "w22_23"
-    , "w24"
-    , "w25"
-    , "w26"
-    , "w27"
-    , "w28"
-    , "w29"
-    , "w30"
-    , "w31"
-    , "w32"
-    , "w33"
-    , "w34"
-    , "w35"
-    , "w3_4"
-    , "w5"
-    , "w6"
-    , "w7"
-    , "w8"
-    , "w9"
-    , "vin_cm"
-    , "vin_cm_rr"
+    , "cmm"
+    , "r1"
+    , "cz"
+    , "rz"
+    , "l5"
+    , "l7"
+    , "l9"
+    , "ln"
+    , "lp"
 };
-unordered_map<string, double> run_spice(string folder, vector<double>& params)
+unordered_map<string, double> run_spice(string folder, const vector<double>& params)
 {
-    string para_path    = folder + "/param.sp";
-    string netlist_path = folder + "/Single_ended.sp";
-    string ma0_path     = folder + "/Single_ended.ma0";
-    string output_path  = folder + "/output.info";
-    string hspice_cmd   = "hspice64 " + netlist_path + " -o " + folder + "> " + output_path + " 2>&1";
-    gen_param(names, params, para_path);
-    int ret = system(hspice_cmd.c_str());
+    vector<string> netlist_vec{"Single_ended", "Single_ended_FF", "Single_ended_SS"};
+    string para_path   = folder + "/param.sp";
+    string output_path = folder + "/output.info";
     unordered_map<string, double> measured;
-    if (ret == 0)
-    {
-        measured = parse_hspice_measure_file(ma0_path);
-    }
-    else
-    {
-        cerr << "Fail to run hspice" << endl;
-        for (auto p : params)
-            cerr << p << endl;
-        measured["gain"] = -1 * numeric_limits<double>::infinity();
-        measured["pm"]   = -180;
-        measured["ugf"]  = 0;
-    }
-    return measured;
-}
-double opt_func(unsigned int idx, const vector<double>& params) // params without vin_cm
-{
-    vector<double> sweep_vin_cm{0, 1.1, 3.3};
-    vector<double> gain_vec;
-    vector<double> penalty_vec;
-    string netlist_path;
-    #pragma omp critical
+    measured["fail"] = false;
+    measured["gain"] = numeric_limits<double>::infinity();
+    measured["pm"]   = numeric_limits<double>::infinity();
+    measured["ugf"]  = numeric_limits<double>::infinity();
 
-    netlist_path = "workspace/" + to_string(idx);
-    for (auto vin_cm : sweep_vin_cm)
+    for (string corner : netlist_vec)
     {
-        vector<double> new_params = params;
-        new_params.push_back(vin_cm);
-        auto measured = run_spice(netlist_path, new_params);
-        if (measured["failed"] == 0)
+        string netlist_path = corner + ".sp";
+        string ma0_path     = folder + "/" + corner + ".ma0";
+        string hspice_cmd = "cd " + folder + " && hspicerf64 " + netlist_path + " > output.info 2>&1";
+        unordered_map<string, double> tmp_measured;
+        gen_param(names, params, para_path);
+        int ret = system(hspice_cmd.c_str());
+        if (ret == 0)
         {
-            double this_gain    = measured["gain"];
-            double this_gain_rr = measured["gain_rr"];
-            double this_ugf     = measured["ugf"] / 1e6; // MHz
-            double this_pm      = measured["pm"] > 0 ? measured["pm"] - 180 : measured["pm"] + 180;
-            if (this_gain_rr < this_gain)
-            {
-                this_gain = this_gain_rr;
-            }
-
-            double this_penalty_ugf = this_ugf > 200 ? 0 : 200 - this_ugf;
-            double this_penalty_pm  = this_pm  > 60  ? 0 : 60  - this_pm;
-            double this_penalty     = this_penalty_ugf + this_penalty_pm;
-
-            gain_vec.push_back(this_gain);
-            penalty_vec.push_back(this_penalty);
+            tmp_measured       = parse_hspice_measure_file(ma0_path);
+            tmp_measured["pm"] = tmp_measured["pm"] > 0 ? tmp_measured["pm"] - 180 : tmp_measured["pm"] + 180;
         }
         else
         {
-            gain_vec.push_back(-1 * numeric_limits<double>::infinity());
-            penalty_vec.push_back(numeric_limits<double>::infinity());
-            break;
+            cerr << "Fail to run hspice" << endl;
+            for (auto p : params)
+                cerr << p << endl;
+            tmp_measured["failed"] = true;
+            tmp_measured["gain"] = -1 * numeric_limits<double>::infinity();
+            tmp_measured["pm"]   = -1 * numeric_limits<double>::infinity();
+            tmp_measured["ugf"]  = -1 * numeric_limits<double>::infinity();
         }
+        measured["failed"] = tmp_measured["failed"];
+        if (measured["failed"]) break;
+        if (tmp_measured["gain"] < measured["gain"]) measured["gain"] = tmp_measured["gain"];
+        if (tmp_measured["pm"]   < measured["pm"])   measured["pm"]   = tmp_measured["pm"];
+        if (tmp_measured["ugf"]  < measured["ugf"])  measured["ugf"]  = tmp_measured["ugf"];
     }
-    double gain    = *(min_element(gain_vec.begin(), gain_vec.end()));
-    double penalty = *(min_element(penalty_vec.begin(), penalty_vec.end()));
-    double fom     = gain - 3 * penalty;
-    char buf[100];
-    printf("idx: %d, gain = %g dB, penalty = %g, fom = %g\n", idx, gain, penalty, fom);
-    fflush(stdout);
-    if (fom > 70 && penalty < 1)
+    return measured;
+}
+double read_iq(string netlist_path)
+{
+    vector<string> netlist_vec{"Single_ended.printsw0", "Single_ended_FF.printsw0", "Single_ended_SS.printsw0"};
+    double iq = 0;
+    for (auto filename : netlist_vec)
     {
-        sprintf(buf, "out/good_%d_%g", idx, gain);
-        string stat_name(buf);
-        vector<double> new_params = params;
-        new_params.push_back(numeric_limits<double>::infinity());
-        gen_param(names, new_params, stat_name);
+        double tmp_iq;
+        string path = netlist_path + "/" + filename;
+        ifstream ifile(path);
+        string line;
+        getline(ifile, line); // ignore first line
+        getline(ifile, line); // ignore second line
+        ifile >> tmp_iq >> tmp_iq;
+        if (fabs(tmp_iq) > iq)
+            iq = fabs(tmp_iq);
     }
-    return -1 * fom;
+    return iq;
+}
+double opt_func(unsigned int idx, const vector<double>& params) // params without vin_cm
+{
+    // Iq < 68.5uA
+    // Gain > 104.7 dB
+    // UGF  > 1.17MHz
+    // PM   > 62.5 degree
+    string netlist_path;
+    netlist_path = "workspace/" + to_string(idx);
+    unordered_map<string, double> measured = run_spice(netlist_path, params);
+
+    bool failed = measured["failed"];
+    double gain = measured["gain"];
+    double pm   = measured["pm"];
+    double ugf  = measured["ugf"] / 1e6;
+    double iq   = 1e6 * read_iq(netlist_path);
+    double fom  = numeric_limits<double>::infinity();
+    if(! failed)
+    {
+        double penalty_pm  = pm  > 62.5 ? 0 : 62.5 - pm;
+        double penalty_ugf = ugf > 1.17 ? 0 : 50 * (1.17  - ugf);
+        double penalty_iq  = iq  < 69.2 ? 0 : iq - 69.2;
+        double penalty     = 30 * (penalty_pm + penalty_ugf + penalty_iq);
+        char buf[100];
+        fflush(stdout);
+        if (gain > 100 && penalty < 1)
+        {
+            sprintf(buf, "out/good_%d_%g", idx, gain);
+            string stat_name(buf);
+            vector<double> new_params = params;
+            new_params.push_back(numeric_limits<double>::infinity());
+            gen_param(names, new_params, stat_name);
+        }
+        fom = -1 * (gain - penalty);
+    }
+    printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, fom = %g\n", idx, gain, pm, ugf, iq, fom);
+    return fom;
 }
 int main(int arg_num, char** args)
 {
     vector<pair<double, double>> ranges
     {
-        make_pair(0.5, 10)
-        , make_pair(0  , 3)
-        , make_pair(0.35, 10)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0.4, 20)
-        , make_pair(0, 3.3)
-    }; //without vin_cm_rtr
+        make_pair(1.70e+0, 2.20e+0)
+        , make_pair(5.00e+0, 8.00e+0)
+        , make_pair(5.00e+0, 8.00e+0)
+        , make_pair(9.00e+0, 1.50e+1)
+        , make_pair(1.10e+2, 1.60e+2)
+        , make_pair(9.00e+0, 1.30e+1)
+        , make_pair(9.00e+0, 1.30e+1)
+        , make_pair(1.00e+1, 1.50e+1)
+        , make_pair(9.00e+0, 1.40e+1)
+        , make_pair(2.00e+1, 3.50e+1)
+        , make_pair(1.70e+1, 2.70e+1)
+        , make_pair(1.10e+2, 1.60e+2)
+        , make_pair(1.40e+1, 2.20e+1)
+        , make_pair(1.20e+1, 1.60e+1)
+        , make_pair(2.70e+1, 4.20e+1)
+        , make_pair(1.00e+0, 2.00e+0)
+        , make_pair(1.40e+2, 2.20e+2)
+        , make_pair(5.00e-1, 1.00e+0)
+        , make_pair(2.60e+2, 3.20e+2)
+        , make_pair(3.70e-1, 4.70e-1)
+        , make_pair(3.70e-1, 4.70e-1)
+        , make_pair(1.00e+0, 1.20e+0)
+        , make_pair(6.00e-1, 8.00e-1)
+        , make_pair(1.00e+0, 1.30e+0)
+    };
     int thread_num = 2;
     if (arg_num > 1)
     {
@@ -186,7 +182,7 @@ int main(int arg_num, char** args)
     for (unsigned int i = 0; i < init_num; ++i)
     {
         string path = "workspace/" + to_string(i);
-        string cmd = "mkdir -p " + path + " && cp circuit/weixin/* " + path;
+        string cmd = "mkdir -p " + path + " && cp circuit/pengbo/* " + path;
         system(cmd.c_str());
     }
     if (mkdir_ret != 0)
@@ -194,6 +190,7 @@ int main(int arg_num, char** args)
         cerr << "Can't mkdir" << endl;
         exit(0);
     }
+    // vector<vector<double>> vec = vector<vector<double>>(3, vector<double>(4, 0));
     DESolver desolver(opt_func, ranges, iter_num, para_num, init_num);
     vector<double> solution = desolver.solver();
     // printf("Result is %g dB\n", -1 * opt_func(solution));
