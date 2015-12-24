@@ -129,9 +129,7 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         {
             sprintf(buf, "out/good_%d_%g", idx, gain);
             string stat_name(buf);
-            vector<double> new_params = params;
-            new_params.push_back(numeric_limits<double>::infinity());
-            gen_param(names, new_params, stat_name);
+            gen_param(names, params, stat_name);
         }
         fom = -1 * (gain - penalty);
     }
