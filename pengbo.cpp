@@ -111,21 +111,26 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
     netlist_path = "workspace/" + to_string(idx);
     unordered_map<string, double> measured = run_spice(netlist_path, params);
 
-    bool failed = measured["failed"];
-    double gain = measured["gain"];
-    double pm   = measured["pm"];
-    double ugf  = measured["ugf"] / 1e6;
-    double iq   = 1e6 * read_iq(netlist_path);
-    double fom  = numeric_limits<double>::infinity();
-    if(! failed)
+    bool failed    = measured["failed"];
+    double gain    = measured["gain"];
+    double pm      = measured["pm"];
+    double ugf     = measured["ugf"] / 1e6;
+    double iq      = 1e6 * read_iq(netlist_path);
+    double penalty = numeric_limits<double>::infinity();
+    double fom     = numeric_limits<double>::infinity();
+    if (! failed)
     {
-        double penalty_pm  = pm  > 62.5 ? 0 : 62.5 - pm;
-        double penalty_ugf = ugf > 1.17 ? 0 : 50 * (1.17  - ugf);
-        double penalty_iq  = iq  < 69.2 ? 0 : iq - 69.2;
-        double penalty     = 30 * (penalty_pm + penalty_ugf + penalty_iq);
+        const double pm_constr   = 55.5;
+        const double ugf_constr  = 1.17;
+        const double iq_constr   = 60.7;
+        const double penalty_pm  = pm  > pm_constr  ? 0 : pm_constr - pm;
+        const double penalty_ugf = ugf > ugf_constr ? 0 : 50 * (ugf_constr  - ugf);
+        const double penalty_iq  = iq  < iq_constr  ? 0 : iq - iq_constr;
+
+        penalty = 30 * (penalty_pm + penalty_ugf + penalty_iq);
         char buf[100];
         fflush(stdout);
-        if (gain > 100 && penalty < 1)
+        if (gain > 100 && penalty < 0.1)
         {
             sprintf(buf, "out/good_%d_%g", idx, gain);
             string stat_name(buf);
@@ -133,7 +138,10 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         }
         fom = -1 * (gain - penalty);
     }
-    printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, fom = %g\n", idx, gain, pm, ugf, iq, fom);
+    #pragma omp critical
+    {
+        printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, penalty = %g, fom = %g\n", idx, gain, pm, ugf, iq, penalty, fom);
+    }
     return fom;
 }
 int main(int arg_num, char** args)
