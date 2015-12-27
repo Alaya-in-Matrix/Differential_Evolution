@@ -4,6 +4,6 @@ de
 de.exe
 param.sp
 de-spice
-out/
 bin/
 .ycm_extra_conf.py*
+process.pl
