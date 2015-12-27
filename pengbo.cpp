@@ -132,7 +132,7 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         fflush(stdout);
         if (ugf > 1.17 && penalty < 0.1)
         {
-            sprintf(buf, "out/good_%d_%g", idx, gain);
+            sprintf(buf, "out/good_%d_%g", idx, fom);
             string stat_name(buf);
             gen_param(names, params, stat_name);
         }
