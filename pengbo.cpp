@@ -120,23 +120,23 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
     double fom     = numeric_limits<double>::infinity();
     if (! failed)
     {
-        const double pm_constr   = 55.5;
-        const double ugf_constr  = 1.17;
-        const double iq_constr   = 60.7;
-        const double penalty_pm  = pm  > pm_constr  ? 0 : pm_constr - pm;
-        const double penalty_ugf = ugf > ugf_constr ? 0 : 50 * (ugf_constr  - ugf);
-        const double penalty_iq  = iq  < iq_constr  ? 0 : iq - iq_constr;
+        const double pm_constr    = 55.5;
+        const double iq_constr    = 60.7;
+        const double gain_constr  = 100;
+        const double penalty_pm   = pm   > pm_constr    ? 0 : pm_constr - pm;
+        const double penalty_iq   = iq   < iq_constr    ? 0 : iq - iq_constr;
+        const double penalty_gain = gain > gain_constr  ? 0 : gain_constr - gain;
 
-        penalty = 30 * (penalty_pm + penalty_ugf + penalty_iq);
+        penalty = 30 * (penalty_pm + penalty_gain + penalty_iq);
         char buf[100];
         fflush(stdout);
-        if (gain > 100 && penalty < 0.1)
+        if (ugf > 1.17 && penalty < 0.1)
         {
             sprintf(buf, "out/good_%d_%g", idx, gain);
             string stat_name(buf);
             gen_param(names, params, stat_name);
         }
-        fom = -1 * (gain - penalty);
+        fom = -1 * (ugf - penalty);
     }
     #pragma omp critical
     {
