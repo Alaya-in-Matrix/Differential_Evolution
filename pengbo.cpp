@@ -77,28 +77,31 @@ unordered_map<string, double> run_spice(string folder, const vector<double>& par
 
             ma0_measured["pm"]   = ma0_measured["pm"] > 0 ? ma0_measured["pm"] - 180 : ma0_measured["pm"] + 180;
             ma0_measured["ugf"] *= 1e-6;
-            mt0_measured["srr"]  = 1e-6 * 0.8 * (mt0_measured["vomax"] - mt0_measured["vomin"]) / mt0_measured["trise"];
-            mt0_measured["srf"]  = 1e-6 * 0.8 * (mt0_measured["vomax"] - mt0_measured["vomin"]) / mt0_measured["tfall"];
+            mt0_measured["srr"] = 1e-6 * fabs(mt0_measured["srr"]);
+            mt0_measured["srf"] = 1e-6 * fabs(mt0_measured["srf"]);
             ms0_measured["iq"]  *= 1e6;
 
-            measured["failed"] = ma0_measured["fail"] || mt0_measured["failed"] || ms0_measured["failed"];
+            measured["failed"] = ma0_measured["failed"] || mt0_measured["failed"] || ms0_measured["failed"];
         }
         else
         {
             measured["failed"] = 1;
+            cerr << "Fail to run hspice" << endl;
+            for (auto p : params)
+                cerr << p << endl;
+        }
+        if (measured["failed"]) 
+        {
             measured["gain"]   = numeric_limits<double>::infinity() * -1;
             measured["pm"]     = numeric_limits<double>::infinity() * -1;
             measured["ugf"]    = numeric_limits<double>::infinity() * -1;
             measured["srr"]    = numeric_limits<double>::infinity() * -1;
             measured["srf"]    = numeric_limits<double>::infinity() * -1;
-            measured["cmrr"]   = numeric_limits<double>::infinity() * -1;
-            measured["psr"]    = numeric_limits<double>::infinity() * -1;
+            measured["cmrr"]   = numeric_limits<double>::infinity();
+            measured["psr"]    = numeric_limits<double>::infinity();
             measured["iq"]     = numeric_limits<double>::infinity();
-            cerr << "Fail to run hspice" << endl;
-            for (auto p : params)
-                cerr << p << endl;
+            break;
         }
-        if (measured["failed"]) break;
         if (ma0_measured["gain"]  < measured["gain"])  measured["gain"] = ma0_measured["gain"];
         if (ma0_measured["pm"]    < measured["pm"])    measured["pm"]   = ma0_measured["pm"];
         if (ma0_measured["ugf"]   < measured["ugf"])   measured["ugf"]  = ma0_measured["ugf"];

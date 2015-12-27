@@ -113,8 +113,8 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
         vector<double> solution_u = u[i];
         double result_x = _results[i];
         double result_u = _func(i, solution_u);
-        _candidates[i]  = result_u < result_x ? u[i] : x[i];
-        _results[i]     = result_u < result_x ? result_u : result_x;
+        _candidates[i]  = result_u <= result_x ? u[i] : x[i];
+        _results[i]     = result_u <= result_x ? result_u : result_x;
     }
 }
 pair<int, double> DESolver::_find_best(const Vec2D& solutions) const noexcept

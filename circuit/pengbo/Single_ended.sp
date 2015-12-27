@@ -9,7 +9,7 @@
 .option post
 .option ingold=2
 .option numdgt=10
-.lib 'cmos035.lib' FF
+.lib 'cmos035.lib' TT
 .inc param.sp
 .inc Single_ended_opamp.txt
 
@@ -76,8 +76,8 @@ vss vss 0 0
 ** .print v(vin_tr+) v(vo_tr)
 .meas tran vomax max v(vo_tr)
 .meas tran vomin min v(vo_tr)
-** .meas tran srr deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' rise=1
-** .meas tran srf deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' fall=1
-.meas tran trise trig v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' rise = 1 targ v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' rise = 1
-.meas tran tfall trig v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' fall = 1 targ v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' fall = 1
+.meas tran srr deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' rise=1
+.meas tran srf deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' fall=1
+** .meas tran trise trig v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' rise = 1 targ v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' rise = 1
+** .meas tran tfall trig v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' fall = 1 targ v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' fall = 1
 .end
