@@ -132,7 +132,7 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         fflush(stdout);
         if (ugf > 1.17 && penalty < 0.1)
         {
-            sprintf(buf, "out/good_%d_%g", idx, gain);
+            sprintf(buf, "out/good_%d_%g", idx, fom);
             string stat_name(buf);
             gen_param(names, params, stat_name);
         }
@@ -149,29 +149,31 @@ int main(int arg_num, char** args)
     vector<pair<double, double>> ranges
     {
         make_pair(1.70e+0, 2.20e+0)
-        , make_pair(5.00e+0, 8.00e+0)
-        , make_pair(5.00e+0, 8.00e+0)
-        , make_pair(9.00e+0, 1.50e+1)
-        , make_pair(1.10e+2, 1.60e+2)
-        , make_pair(9.00e+0, 1.30e+1)
-        , make_pair(9.00e+0, 1.30e+1)
-        , make_pair(1.00e+1, 1.50e+1)
-        , make_pair(9.00e+0, 1.40e+1)
-        , make_pair(2.00e+1, 3.50e+1)
-        , make_pair(1.70e+1, 2.70e+1)
-        , make_pair(1.10e+2, 1.60e+2)
-        , make_pair(1.40e+1, 2.20e+1)
-        , make_pair(1.20e+1, 1.60e+1)
-        , make_pair(2.70e+1, 4.20e+1)
+
+        , make_pair(4.00e-1, 8.00e+0)
+        , make_pair(4.00e-1, 8.00e+0)
+        , make_pair(4.00e-1, 1.50e+1)
+        , make_pair(4.00e-1, 1.60e+2)
+        , make_pair(4.00e-1, 1.30e+1)
+        , make_pair(4.00e-1, 1.30e+1)
+        , make_pair(4.00e-1, 1.50e+1)
+        , make_pair(4.00e-1, 1.40e+1)
+        , make_pair(4.00e-1, 3.50e+1)
+        , make_pair(4.00e-1, 2.70e+1)
+        , make_pair(4.00e-1, 1.60e+2)
+        , make_pair(4.00e-1, 2.20e+1)
+        , make_pair(4.00e-1, 1.60e+1)
+        , make_pair(4.00e-1, 4.20e+1)
+
         , make_pair(1.00e+0, 2.00e+0)
         , make_pair(1.40e+2, 2.20e+2)
         , make_pair(5.00e-1, 1.00e+0)
         , make_pair(2.60e+2, 3.20e+2)
         , make_pair(3.70e-1, 4.70e-1)
         , make_pair(3.70e-1, 4.70e-1)
-        , make_pair(1.00e+0, 1.20e+0)
-        , make_pair(6.00e-1, 8.00e-1)
-        , make_pair(1.00e+0, 1.30e+0)
+        , make_pair(3.70e-1, 1.20e+0)
+        , make_pair(3.70e-1, 8.00e-1)
+        , make_pair(3.70e-1, 1.30e+0)
     };
     int thread_num = 2;
     if (arg_num > 1)
