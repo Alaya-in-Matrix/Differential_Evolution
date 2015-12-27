@@ -51,55 +51,64 @@ unordered_map<string, double> run_spice(string folder, const vector<double>& par
     measured["gain"] = numeric_limits<double>::infinity();
     measured["pm"]   = numeric_limits<double>::infinity();
     measured["ugf"]  = numeric_limits<double>::infinity();
+    measured["cmrr"] = numeric_limits<double>::infinity() * -1;
+    measured["psr"]  = numeric_limits<double>::infinity() * -1;
+    measured["srr"]  = numeric_limits<double>::infinity();
+    measured["srf"]  = numeric_limits<double>::infinity();
+    measured["iq"]   = numeric_limits<double>::infinity() * -1;
 
     for (string corner : netlist_vec)
     {
         string netlist_path = corner + ".sp";
         string ma0_path     = folder + "/" + corner + ".ma0";
+        string ms0_path     = folder + "/" + corner + ".ms0";
+        string mt0_path     = folder + "/" + corner + ".mt0";
         string hspice_cmd = "cd " + folder + " && hspicerf64 " + netlist_path + " > output.info 2>&1";
-        unordered_map<string, double> tmp_measured;
+        unordered_map<string, double> ma0_measured; // ac
+        unordered_map<string, double> mt0_measured; // tran
+        unordered_map<string, double> ms0_measured; // dc
         gen_param(names, params, para_path);
         int ret = system(hspice_cmd.c_str());
         if (ret == 0)
         {
-            tmp_measured       = parse_hspice_measure_file(ma0_path);
-            tmp_measured["pm"] = tmp_measured["pm"] > 0 ? tmp_measured["pm"] - 180 : tmp_measured["pm"] + 180;
+            ma0_measured       = parse_hspice_measure_file(ma0_path);
+            mt0_measured       = parse_hspice_measure_file(mt0_path);
+            ms0_measured       = parse_hspice_measure_file(ms0_path);
+
+            ma0_measured["pm"]   = ma0_measured["pm"] > 0 ? ma0_measured["pm"] - 180 : ma0_measured["pm"] + 180;
+            ma0_measured["ugf"] *= 1e-6;
+            mt0_measured["srr"]  = 1e-6 * 0.8 * (mt0_measured["vomax"] - mt0_measured["vomin"]) / mt0_measured["trise"];
+            mt0_measured["srf"]  = 1e-6 * 0.8 * (mt0_measured["vomax"] - mt0_measured["vomin"]) / mt0_measured["tfall"];
+            ms0_measured["iq"]  *= 1e6;
+
+            measured["failed"] = ma0_measured["fail"] || mt0_measured["failed"] || ms0_measured["failed"];
         }
         else
         {
+            measured["failed"] = 1;
+            measured["gain"]   = numeric_limits<double>::infinity() * -1;
+            measured["pm"]     = numeric_limits<double>::infinity() * -1;
+            measured["ugf"]    = numeric_limits<double>::infinity() * -1;
+            measured["srr"]    = numeric_limits<double>::infinity() * -1;
+            measured["srf"]    = numeric_limits<double>::infinity() * -1;
+            measured["cmrr"]   = numeric_limits<double>::infinity() * -1;
+            measured["psr"]    = numeric_limits<double>::infinity() * -1;
+            measured["iq"]     = numeric_limits<double>::infinity();
             cerr << "Fail to run hspice" << endl;
             for (auto p : params)
                 cerr << p << endl;
-            tmp_measured["failed"] = true;
-            tmp_measured["gain"] = -1 * numeric_limits<double>::infinity();
-            tmp_measured["pm"]   = -1 * numeric_limits<double>::infinity();
-            tmp_measured["ugf"]  = -1 * numeric_limits<double>::infinity();
         }
-        measured["failed"] = tmp_measured["failed"];
         if (measured["failed"]) break;
-        if (tmp_measured["gain"] < measured["gain"]) measured["gain"] = tmp_measured["gain"];
-        if (tmp_measured["pm"]   < measured["pm"])   measured["pm"]   = tmp_measured["pm"];
-        if (tmp_measured["ugf"]  < measured["ugf"])  measured["ugf"]  = tmp_measured["ugf"];
+        if (ma0_measured["gain"]  < measured["gain"])  measured["gain"] = ma0_measured["gain"];
+        if (ma0_measured["pm"]    < measured["pm"])    measured["pm"]   = ma0_measured["pm"];
+        if (ma0_measured["ugf"]   < measured["ugf"])   measured["ugf"]  = ma0_measured["ugf"];
+        if (ma0_measured["cmrr"]  > measured["cmrr"])  measured["cmrr"] = ma0_measured["cmrr"];
+        if (ma0_measured["psr"]   > measured["psr"])   measured["psr"]  = ma0_measured["psr"];
+        if (mt0_measured["srr"]   < measured["srr"])   measured["srr"]  = mt0_measured["srr"];
+        if (mt0_measured["srf"]   < measured["srf"])   measured["srf"]  = mt0_measured["srf"];
+        if (ms0_measured["iq"]    > measured["iq"])    measured["iq"]   = ms0_measured["iq"];
     }
     return measured;
-}
-double read_iq(string netlist_path)
-{
-    vector<string> netlist_vec{"Single_ended.printsw0", "Single_ended_FF.printsw0", "Single_ended_SS.printsw0"};
-    double iq = 0;
-    for (auto filename : netlist_vec)
-    {
-        double tmp_iq;
-        string path = netlist_path + "/" + filename;
-        ifstream ifile(path);
-        string line;
-        getline(ifile, line); // ignore first line
-        getline(ifile, line); // ignore second line
-        ifile >> tmp_iq >> tmp_iq;
-        if (fabs(tmp_iq) > iq)
-            iq = fabs(tmp_iq);
-    }
-    return iq;
 }
 double opt_func(unsigned int idx, const vector<double>& params) // params without vin_cm
 {
@@ -111,23 +120,38 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
     netlist_path = "workspace/" + to_string(idx);
     unordered_map<string, double> measured = run_spice(netlist_path, params);
 
-    bool failed    = measured["failed"];
-    double gain    = measured["gain"];
-    double pm      = measured["pm"];
-    double ugf     = measured["ugf"] / 1e6;
-    double iq      = 1e6 * read_iq(netlist_path);
+    bool failed = measured["failed"];
+    double gain = measured["gain"];
+    double pm   = measured["pm"];
+    double ugf  = measured["ugf"];
+    double iq   = measured["iq"];
+    double cmrr = measured["cmrr"];
+    double psr  = measured["psr"];
+    double srr  = measured["srr"];
+    double srf  = measured["srf"];
+
     double penalty = numeric_limits<double>::infinity();
     double fom     = numeric_limits<double>::infinity();
     if (! failed)
     {
-        const double pm_constr    = 55.5;
-        const double iq_constr    = 60.7;
-        const double gain_constr  = 100;
-        const double penalty_pm   = pm   > pm_constr    ? 0 : pm_constr - pm;
-        const double penalty_iq   = iq   < iq_constr    ? 0 : iq - iq_constr;
-        const double penalty_gain = gain > gain_constr  ? 0 : gain_constr - gain;
+        const double pm_constr   = 55.5;
+        const double iq_constr   = 56.0;
+        const double gain_constr = 100;
+        const double srr_constr  = 0.26;
+        const double srf_constr  = 0.26;
+        const double cmrr_constr = numeric_limits<double>::infinity(); // 这里不是共模抑制比，是共模增益, 越小越好
+        const double psr_constr  = numeric_limits<double>::infinity();
+        
+        penalty = 0;
+        penalty += iq   < iq_constr   ? 0 : iq - iq_constr;
+        penalty += pm   > pm_constr   ? 0 : pm_constr - pm;
+        penalty += gain > gain_constr ? 0 : gain_constr - gain;
+        penalty += srr  > srr_constr  ? 0 : 50 * (srr_constr - srr);
+        penalty += srf  > srf_constr  ? 0 : 50 * (srf_constr - srf);
+        penalty += cmrr < cmrr_constr ? 0 : cmrr - cmrr_constr;
+        penalty += psr  < psr_constr  ? 0 : psr - psr_constr;
+        penalty *= 30;
 
-        penalty = 30 * (penalty_pm + penalty_gain + penalty_iq);
         char buf[100];
         fflush(stdout);
         if (ugf > 1.17 && penalty < 0.1)
@@ -140,7 +164,7 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
     }
     #pragma omp critical
     {
-        printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, penalty = %g, fom = %g\n", idx, gain, pm, ugf, iq, penalty, fom);
+        printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, srr = %g V/us, srf = %g V/us, penalty = %g, fom = %g\n", idx, gain, pm, ugf, iq, srr, srf, penalty, fom);
     }
     return fom;
 }
