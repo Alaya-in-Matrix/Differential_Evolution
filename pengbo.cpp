@@ -115,10 +115,6 @@ unordered_map<string, double> run_spice(string folder, const vector<double>& par
 }
 double opt_func(unsigned int idx, const vector<double>& params) // params without vin_cm
 {
-    // Iq < 68.5uA
-    // Gain > 104.7 dB
-    // UGF  > 1.17MHz
-    // PM   > 62.5 degree
     string netlist_path;
     netlist_path = "workspace/" + to_string(idx);
     unordered_map<string, double> measured = run_spice(netlist_path, params);
@@ -142,23 +138,25 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         const double gain_constr = 100;
         const double srr_constr  = 0.26;
         const double srf_constr  = 0.26;
+        const double ugf_constr  = 1.17;
         const double cmrr_constr = numeric_limits<double>::infinity(); // 这里不是共模抑制比，是共模增益, 越小越好
         const double psr_constr  = numeric_limits<double>::infinity();
         
         penalty = 0;
-        penalty += iq   < iq_constr   ? 0 : iq - iq_constr;
+        // penalty += iq   < iq_constr   ? 0 : iq - iq_constr;
+        penalty += ugf  > ugf_constr  ? 0 : 150 * (ugf_constr - ugf);
         penalty += pm   > pm_constr   ? 0 : pm_constr - pm;
         penalty += gain > gain_constr ? 0 : gain_constr - gain;
-        penalty += srr  > srr_constr  ? 0 : 50 * (srr_constr - srr);
-        penalty += srf  > srf_constr  ? 0 : 50 * (srf_constr - srf);
+        penalty += srr  > srr_constr  ? 0 : 150 * (srr_constr - srr);
+        penalty += srf  > srf_constr  ? 0 : 150 * (srf_constr - srf);
         penalty += cmrr < cmrr_constr ? 0 : cmrr - cmrr_constr;
         penalty += psr  < psr_constr  ? 0 : psr - psr_constr;
         penalty *= 30;
 
         char buf[100];
         fflush(stdout);
-        fom = -1 * (ugf - penalty);
-        if (ugf > 1.17 && penalty < 0.1)
+        fom = iq + penalty;
+        if (iq < 56.0 && penalty < 0.1)
         {
             sprintf(buf, "out/good_%d_%g", idx, fom);
             string stat_name(buf);
