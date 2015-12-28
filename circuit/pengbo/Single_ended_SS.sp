@@ -12,6 +12,7 @@
 .lib 'cmos035.lib' SS
 .inc param.sp
 .inc Single_ended_opamp.txt
+.temp 125
 
 .param vdd_v=2
 .param vin_cm='0.5*vdd_v'
