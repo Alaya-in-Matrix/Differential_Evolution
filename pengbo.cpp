@@ -157,13 +157,13 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
 
         char buf[100];
         fflush(stdout);
+        fom = -1 * (ugf - penalty);
         if (ugf > 1.17 && penalty < 0.1)
         {
             sprintf(buf, "out/good_%d_%g", idx, fom);
             string stat_name(buf);
             gen_param(names, params, stat_name);
         }
-        fom = -1 * (ugf - penalty);
     }
     #pragma omp critical
     {
