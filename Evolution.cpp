@@ -79,7 +79,7 @@ vector<vector<double>> DESolver::_crossover(const Vec2D& x, const Vec2D& v) cons
     assert(x.size() == v.size());
     size_t solution_num = x.size();
     uniform_real_distribution<double>        distr_randij(0, 1);
-    uniform_int_distribution<unsigned int>   distr_randn(1, _para_num);
+    uniform_int_distribution<unsigned int>   distr_randn(0, _para_num);
 
     Vec2D u(x.size());
     #pragma omp parallel for
