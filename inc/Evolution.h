@@ -29,11 +29,14 @@ class DESolver
     void _selection(const Vec2D&, const Vec2D&) noexcept;
 
 public:
-    DESolver( std::function<double(unsigned int, const std::vector<double>&)>
-              , RangeVec
+    DESolver( std::function <double(unsigned int idx, const std::vector<double>&)> f
+              , RangeVec rg
               , unsigned int iter_num
               , unsigned int para_num
               , unsigned int init_num
+              , double cr     = 0.8
+              , double fmu    = 0.75
+              , double fsigma = 0.25
             );
     std::vector<double> solver();
 };
