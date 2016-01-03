@@ -18,9 +18,9 @@ DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
                     , unsigned int iter_num
                     , unsigned int para_num
                     , unsigned int init_num
-                    , double cr = 0.8
-                    , double fmu = 0.75
-                    , double fsigma = 0.25
+                    , double cr 
+                    , double fmu
+                    , double fsigma
                   )
     : _func(f)
     , _ranges(rg)
