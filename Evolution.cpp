@@ -18,15 +18,18 @@ DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
                     , unsigned int iter_num
                     , unsigned int para_num
                     , unsigned int init_num
+                    , double cr 
+                    , double fmu
+                    , double fsigma
                   )
     : _func(f)
     , _ranges(rg)
     , _iter_num(iter_num)
     , _para_num(para_num)
     , _init_num(init_num)
-    , _cr(0.8)
-    , _fmu(0.75)
-    , _fsigma(0.25)
+    , _cr(cr)
+    , _fmu(fmu)
+    , _fsigma(fsigma)
 {
     assert(rg.size() == _para_num);
 
@@ -79,7 +82,7 @@ vector<vector<double>> DESolver::_crossover(const Vec2D& x, const Vec2D& v) cons
     assert(x.size() == v.size());
     size_t solution_num = x.size();
     uniform_real_distribution<double>        distr_randij(0, 1);
-    uniform_int_distribution<unsigned int>   distr_randn(1, _para_num);
+    uniform_int_distribution<unsigned int>   distr_randn(0, _para_num);
 
     Vec2D u(x.size());
     #pragma omp parallel for

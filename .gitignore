@@ -6,4 +6,7 @@ param.sp
 de-spice
 bin/
 .ycm_extra_conf.py*
-process.pl
+
+# perl script to parse run.log
+run.log
+*.pl
