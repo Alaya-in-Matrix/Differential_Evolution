@@ -64,8 +64,8 @@ vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcep
         double f  = f_distr(_engine);
         size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx});
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1});
-        auto x_r1 = solutions[r1];
-        auto x_r2 = solutions[r2];
+        const auto& x_r1 = solutions[r1];
+        const auto& x_r2 = solutions[r2];
         v.push_back(vector<double>(_para_num));
         for (size_t j = 0; j < _para_num; ++j)
         {
@@ -82,7 +82,7 @@ vector<vector<double>> DESolver::_crossover(const Vec2D& x, const Vec2D& v) cons
     assert(x.size() == v.size());
     size_t solution_num = x.size();
     uniform_real_distribution<double>        distr_randij(0, 1);
-    uniform_int_distribution<unsigned int>   distr_randn(0, _para_num);
+    uniform_int_distribution<unsigned int>   distr_randn(0, _para_num - 1);
 
     Vec2D u(x.size());
     #pragma omp parallel for
@@ -112,17 +112,14 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
         assert(x[i].size() == _para_num);
         assert(u[i].size() == _para_num);
 
-        vector<double> solution_x = x[i];
-        vector<double> solution_u = u[i];
         double result_x = _results[i];
-        double result_u = _func(i, solution_u);
+        double result_u = _func(i, u[i]);
         _candidates[i]  = result_u <= result_x ? u[i] : x[i];
         _results[i]     = result_u <= result_x ? result_u : result_x;
     }
 }
 pair<int, double> DESolver::_find_best(const Vec2D& solutions) const noexcept
 {
-    vector<double> results(solutions.size());
     size_t best_idx    = distance(_results.begin(), min_element(_results.begin(), _results.end()));
     double best_result = _results[best_idx];
     printf("Current Best: (%zu, %g)\n", best_idx, best_result);
