@@ -2,11 +2,13 @@ CXX   = g++
 FLAGS = -std=c++11 -O3 -fopenmp -I inc
 SRC   = Evolution.cpp \
 		weixin.cpp \
-		hspice_util.cpp
+		hspice_util.cpp \
+		love.cpp
 OBJ   = obj/Evolution.o \
 		obj/weixin.o \
 		obj/pengbo.o \
-		obj/hspice_util.o
+		obj/hspice_util.o \
+		obj/love.o
 
 .PHONY: all
 all:
@@ -18,6 +20,10 @@ pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
 
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
+
+love:obj/Evolution.o obj/hspice_util.o obj/love.o
+	$(CXX) $^ -o $@ $(FLAGS)
+
 
 obj/%.o:%.cpp
 	mkdir -p obj
