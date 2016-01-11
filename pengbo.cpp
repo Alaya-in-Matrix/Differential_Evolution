@@ -90,7 +90,7 @@ unordered_map<string, double> run_spice(string folder, const vector<double>& par
             for (auto p : params)
                 cerr << p << endl;
         }
-        if (measured["failed"]) 
+        if (measured["failed"])
         {
             measured["gain"]   = numeric_limits<double>::infinity() * -1;
             measured["pm"]     = numeric_limits<double>::infinity() * -1;
@@ -136,27 +136,26 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
         const double pm_constr   = 55.5;
         const double iq_constr   = 56.0;
         const double gain_constr = 100;
-        const double srr_constr  = 0.26;
+        const double srr_constr  = 0.24;
         const double srf_constr  = 0.26;
-        const double ugf_constr  = 1.17;
-        const double cmrr_constr = numeric_limits<double>::infinity(); // 这里不是共模抑制比，是共模增益, 越小越好
-        const double psr_constr  = numeric_limits<double>::infinity();
-        
+        const double ugf_constr  = 1.12;
+        // const double cmrr_constr = numeric_limits<double>::infinity(); // 这里不是共模抑制比，是共模增益, 越小越好
+        // const double psr_constr  = numeric_limits<double>::infinity();
+
         penalty = 0;
-        // penalty += iq   < iq_constr   ? 0 : iq - iq_constr;
-        penalty += ugf  > ugf_constr  ? 0 : 150 * (ugf_constr - ugf);
-        penalty += pm   > pm_constr   ? 0 : pm_constr - pm;
-        penalty += gain > gain_constr ? 0 : gain_constr - gain;
-        penalty += srr  > srr_constr  ? 0 : 150 * (srr_constr - srr);
-        penalty += srf  > srf_constr  ? 0 : 150 * (srf_constr - srf);
-        penalty += cmrr < cmrr_constr ? 0 : cmrr - cmrr_constr;
-        penalty += psr  < psr_constr  ? 0 : psr - psr_constr;
+        penalty += iq   < iq_constr   ? 0 : (50 / iq_constr)   * (iq          - iq_constr);
+        penalty += ugf  > ugf_constr  ? 0 : (50 / ugf_constr)  * (ugf_constr  - ugf);
+        penalty += pm   > pm_constr   ? 0 : (50 / pm_constr)   * (pm_constr   - pm);
+        penalty += gain > gain_constr ? 0 : (50 / gain_constr) * (gain_constr - gain);
+        penalty += srr  > srr_constr  ? 0 : (50 / srr_constr)  * (srr_constr  - srr);
+        penalty += srf  > srf_constr  ? 0 : (50 / srf_constr)  * (srf_constr  - srf);
+        // penalty += cmrr < cmrr_constr ? 0 : cmrr - cmrr_constr;
+        // penalty += psr  < psr_constr  ? 0 : psr - psr_constr;
         penalty *= 30;
 
         char buf[100];
-        fflush(stdout);
         fom = iq + penalty;
-        if (iq < 56.0 && penalty < 0.1)
+        if (iq < iq_constr && penalty < 0.1)
         {
             sprintf(buf, "out/good_%d_%g", idx, fom);
             string stat_name(buf);
@@ -166,6 +165,7 @@ double opt_func(unsigned int idx, const vector<double>& params) // params withou
     #pragma omp critical
     {
         printf("idx: %d, gain = %g dB, pm = %g degree, ugf = %g MHz, iq = %g uA, srr = %g V/us, srf = %g V/us, penalty = %g, fom = %g\n", idx, gain, pm, ugf, iq, srr, srf, penalty, fom);
+        fflush(stdout);
     }
     return fom;
 }
