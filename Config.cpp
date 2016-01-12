@@ -13,9 +13,7 @@
 #include "hspice_util.h"
 using namespace std;
 using namespace boost::property_tree;
-void Config::set_para()
-{
-    // I really miss Maybe monad in haskell!
+void Config::set_para() { // I really miss Maybe monad in haskell!
     ptree para_tree;
     _para_names.clear();
     _ranges.clear();
@@ -140,7 +138,6 @@ void Config::set_spec()
         const ptree spec_tree   = _info_tree.get_child("spec");
         const ptree fom_tree    = spec_tree.get_child("fom");
         const ptree constr_tree = spec_tree.get_child("constraints");
-        _normalizer              = spec_tree.get<double>("normalizer");
         _penalty_weight          = spec_tree.get<double>("penalty_weight");
         _fom_name = fom_tree.get<string>("name");
         string fom_type = fom_tree.get<string>("type");
@@ -148,9 +145,9 @@ void Config::set_spec()
         for (const auto& node : constr_tree)
         {
             const auto& node_tree = node.second;
-            string name              = node_tree.get<string>("name");
-            _constraints[name]       = node_tree.get<double>("value");
-            _constr_directions[name] = get_opt_direction(node_tree.get<string>("type"));
+            string name          = node_tree.get<string>("name");
+            _constraints[name]   = node_tree.get<double>("value");
+            _constr_weight[name] = node_tree.get<double>("weight") * get_opt_direction(node_tree.get<string>("type"));
         }
     }
     catch (ptree_error& e)
@@ -271,10 +268,6 @@ double Config::penalty_weight() const noexcept
 {
     return _penalty_weight;
 }
-double Config::constraint_normalizer() const noexcept
-{
-    return _normalizer;
-}
 string Config::fom_name() const noexcept
 {
     return _fom_name;
@@ -287,9 +280,9 @@ std::unordered_map<std::string, double> Config::constraints() const noexcept
 {
     return _constraints;
 }
-std::unordered_map<std::string, int> Config::constraint_direction_weight() const noexcept
+std::unordered_map<std::string, double> Config::constraints_weight() const noexcept
 {
-    return _constr_directions;
+    return _constr_weight;
 }
 void Config::print() const noexcept
 {
@@ -320,16 +313,16 @@ void Config::print() const noexcept
         }
     }
     puts("==================================================================================");
-    assert(_constraints.size() == _constr_directions.size());
-    for(auto constr_pair : _constraints)
-    {
-        const string name      = constr_pair.first;
-        const double value     = constr_pair.second;
-        auto c_direction = _constr_directions.find(name);
-        assert(c_direction != _constr_directions.end());
-        const string cmp_str   = c_direction->second == 1 ? "<" : ">";
-        printf("constraint %s %s %g\n", name.c_str(), cmp_str.c_str(), value);
-    }
+    // assert(_constraints.size() == _constr_directions.size());
+    // for(auto constr_pair : _constraints)
+    // {
+    //     const string name      = constr_pair.first;
+    //     const double value     = constr_pair.second;
+    //     auto c_direction = _constr_directions.find(name);
+    //     assert(c_direction != _constr_directions.end());
+    //     const string cmp_str   = c_direction->second == 1 ? "<" : ">";
+    //     printf("constraint %s %s %g\n", name.c_str(), cmp_str.c_str(), value);
+    // }
     printf("FOM: %s %s\n", _fom_direction == 1 ? "minimize" : "maximize", _fom_name.c_str());
 }
 double Config::process_measured(const string var_name, const vector<double>& data) const noexcept

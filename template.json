@@ -52,15 +52,14 @@
         {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "head"}
     ], 
     "spec": {
-        "normalizer": 200,
         "penalty_weight": 3,
         "fom": {
             "name": "gain",
             "type": "maximize"
         },
         "constraints": [
-            { "name": "ugf", "type": "maximize", "value": 200 },
-            { "name": "pm",  "type": "maximize", "value": 60 }
+            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 1},
+            { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 1}
         ]
     }
 }

@@ -39,12 +39,11 @@ class Config
 
     // spec
     // usage: auto w = OptDirectionWeight[Minimize]...
-    double _normalizer;
     int    _penalty_weight;
     std::string _fom_name;
     double _fom_direction;
     std::unordered_map<std::string, double> _constraints;
-    std::unordered_map<std::string, int> _constr_directions; // 1 or -1
+    std::unordered_map<std::string, double> _constr_weight; 
 
     void set_para();
     void set_opt_settings() noexcept; //these settings have default value, so no exception would be thrown
@@ -72,11 +71,10 @@ public:
     std::string sim_tool() const noexcept;
     std::unordered_map<std::string, std::vector<std::string>> measured_vars() const noexcept;
     double penalty_weight() const noexcept;
-    double constraint_normalizer() const noexcept;
     std::string fom_name() const noexcept;
     int fom_direction_weight() const noexcept;
     std::unordered_map<std::string, double> constraints() const noexcept;
-    std::unordered_map<std::string, int> constraint_direction_weight() const noexcept;
+    std::unordered_map<std::string, double> constraints_weight() const noexcept;
     double process_measured(const std::string, const std::vector<double>&) const noexcept;
 };
 #endif

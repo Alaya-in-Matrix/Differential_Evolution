@@ -98,18 +98,17 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             }
             fom = measured.find(fom_name)->second * fom_weight;
             const auto constraints      = _opt_info.constraints();
-            const auto constr_w         = _opt_info.constraint_direction_weight();
+            const auto constr_w         = _opt_info.constraints_weight();
             const double penalty_weight = _opt_info.penalty_weight();
-            const double normalizer     = _opt_info.constraint_normalizer();
             assert(constraints.size()  == constr_w.size());
             double penalty = 0;
             for (auto c_pair : constraints)
             {
-                string c_name        = c_pair.first;
-                double c_value       = c_pair.second;
-                const auto weight_p  = constr_w.find(c_name);
+                string c_name       = c_pair.first;
+                double c_value      = c_pair.second;
+                const auto weight_p = constr_w.find(c_name);
                 assert(weight_p != constr_w.end());
-                int c_weight         = weight_p->second;
+                double c_weight     = weight_p->second;
                 const auto m_pair = measured.find(c_name);
                 if (m_pair == measured.end())
                 {
@@ -120,7 +119,6 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 m_value *= c_weight;
                 c_value *= c_weight;
                 double tmp_penalty = m_value <= c_value ? 0 : m_value - c_value;
-                tmp_penalty *= fabs((normalizer / c_value));
                 penalty += tmp_penalty;
                 assert(penalty >= 0);
             }
