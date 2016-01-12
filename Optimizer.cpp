@@ -74,6 +74,48 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 {
     return [&](unsigned int idx,  const vector<double>& input) -> double
     {
+        double fom = numeric_limits<double>::infinity();
+        const auto measured = simulation(idx, input);
+        auto meas_failed = measured.find("failed");
+        if(meas_failed == measured.end() || meas_failed->second == 0)
+        {
+            const string fom_name   = _opt_info.fom_name();
+            const double fom_weight = _opt_info.fom_direction_weight();
+            if(measured.find(fom_name) == measured.end())
+            {
+                cerr << "fom " + fom_name + " is not measured" << endl;
+                exit(EXIT_FAILURE);
+            }
+            fom = measured.find(fom_name)->second * fom_weight;
+            const auto constraints      = _opt_info.constraints();
+            const auto constr_w         = _opt_info.constraint_direction_weight();
+            const double penalty_weight = _opt_info.penalty_weight();
+            const double normalizer     = _opt_info.constraint_normalizer();
+            assert(constraints.size()  == constr_w.size());
+            for(auto c_pair : constraints)
+            {
+                string c_name        = c_pair.first;
+                double c_value       = c_pair.second;
+                const auto weight_p  = constr_w.find(c_name);
+                assert(weight_p != constr_w.end());
+                int c_weight         = weight_p->second;
+                const auto m_pair = measured.find(c_name);
+                if(m_pair == measured.end())
+                {
+                    cerr << "Constraint variable " << c_name << " is not measured" << endl;
+                    exit(EXIT_FAILURE);
+                }
+                double m_value = m_pair->second;
+                m_value *= c_weight;
+                c_value *= c_weight;
+                double penalty = m_value <= c_value ? 0 : m_value - c_value;
+                penalty *= (normalizer / c_value);
+                penalty *= penalty_weight;
+                assert(penalty > 0);
+                fom += penalty;
+            }
+        }
+        return fom;
     };
 }
 unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const vector<double>& params) const

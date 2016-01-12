@@ -70,6 +70,8 @@ public:
     std::string testbench() const noexcept;
     std::string sim_tool() const noexcept;
     std::unordered_map<std::string, std::vector<std::string>> measured_vars() const noexcept;
+    double penalty_weight() const noexcept;
+    double constraint_normalizer() const noexcept;
     std::string fom_name() const noexcept;
     int fom_direction_weight() const noexcept;
     std::unordered_map<std::string, double> constraints() const noexcept;

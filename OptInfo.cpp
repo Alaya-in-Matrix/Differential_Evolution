@@ -258,6 +258,14 @@ unordered_map<string, vector<string>> OptInfo::measured_vars() const noexcept
 {
     return _measured_vars;
 }
+double OptInfo::penalty_weight() const noexcept
+{
+    return _penalty_weight;
+}
+double OptInfo::constraint_normalizer() const noexcept
+{
+    return _normalizer;
+}
 string OptInfo::fom_name() const noexcept
 {
     return _fom_name;

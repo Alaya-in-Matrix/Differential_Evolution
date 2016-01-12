@@ -8,9 +8,14 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/optional.hpp>
 #include "OptInfo.h"
+#include "Optimizer.h"
 int main()
 {
-    OptInfo opt_info("template.json");
-    opt_info.print();
+    OptInfo config("template.json");
+    config.print();
+    
+    Optimizer opt(config);
+    opt.init();
+    opt.run();
     return 0;
 }
