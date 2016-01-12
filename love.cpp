@@ -9,13 +9,19 @@
 #include <boost/optional.hpp>
 #include "OptInfo.h"
 #include "Optimizer.h"
-int main()
+using namespace std;
+int main(int arg_num, char** args)
 {
-    OptInfo config("template.json");
+    if(arg_num < 2)
+    {
+        cerr << "Usage: " << args[0] << " config-json-file-name" << endl;
+        return EXIT_FAILURE;
+    }
+    OptInfo config(args[1]);
     config.print();
     
     Optimizer opt(config);
     opt.init();
     opt.run();
-    return 0;
+    return EXIT_SUCCESS;
 }
