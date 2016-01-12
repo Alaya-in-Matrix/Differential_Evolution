@@ -120,11 +120,11 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 }
 unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const vector<double>& params) const
 {
-    const string netlist_dir  = _opt_info.circuit_dir() + "/" + to_string(pop_idx);
-    const string para_path    = netlist_dir + "/" + _opt_info.para_file();
-    const string netlist_path = netlist_dir + "/" + _opt_info.testbench();
-    const string output_path  = netlist_dir + "/" + "output.info";
-    const string sim_cmd      = _opt_info.sim_tool() + " " + netlist_path + " -o " + netlist_dir + " >  " + output_path + " 2>&1";
+    const string workspace    = _opt_info.workspace() + "/" + to_string(pop_idx);
+    const string para_path    = workspace + "/" + _opt_info.para_file();
+    const string netlist_path = workspace + "/" + _opt_info.testbench();
+    const string output_path  = workspace + "/" + "output.info";
+    const string sim_cmd      = _opt_info.sim_tool() + " " + netlist_path + " -o " + workspace + " >  " + output_path + " 2>&1";
     unordered_map<string, vector<string>> measured_vars = _opt_info.measured_vars();
     unordered_map<string, double> measured;
     gen_param(_opt_info.get_para_names(), params, para_path);
