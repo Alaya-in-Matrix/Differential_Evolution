@@ -3,7 +3,7 @@
     "init_num": 100, 
     "out_dir": "out",
     "workspace": "workspace",
-    "thread_num":2, 
+    "thread_num":1, 
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 10 },
         { "name": "ival", "lb": 0.5, "ub": 3 },

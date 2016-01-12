@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <utility>
+#include <omp.h>
 #include <cassert>
 #include <unordered_map>
 #include <boost/property_tree/ptree.hpp>
@@ -18,8 +19,7 @@ int main(int arg_num, char** args)
         return EXIT_FAILURE;
     }
     Config config(args[1]);
-    config.print();
-    
+    omp_set_num_threads(config.thread_num());
     Optimizer opt(config);
     opt.init();
     opt.run();

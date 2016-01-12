@@ -28,6 +28,11 @@ unordered_map<string, vector<double>> parse_hspice_measure_file(string path)
 {
     unordered_map<string, vector<double>> result;
     ifstream ma0_file(path);
+    if(! ma0_file.is_open())
+    {
+        cerr << "File " << path << " is not open" << endl;
+        exit(EXIT_FAILURE);
+    }
     string ignore_lines;
     while (getline(ma0_file, ignore_lines))
     {

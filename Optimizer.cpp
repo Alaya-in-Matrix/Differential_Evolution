@@ -3,11 +3,13 @@
 #include <omp.h>
 #include <string>
 #include <cassert>
+#include <omp.h>
 #include <limits>
 #include <exception>
 #include <system_error>
 #include <functional>
 #include <unordered_map>
+#include <boost/algorithm/string.hpp>
 #include "hspice_util.h"
 #include "Evolution.h"
 #include "Config.h"
@@ -76,7 +78,8 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
     {
         double fom = numeric_limits<double>::infinity();
         const auto measured = simulation(idx, input);
-        auto meas_failed = measured.find("failed");
+        printf("idx: %d, measure done\n", idx);
+        auto meas_failed    = measured.find("failed");
         if(meas_failed == measured.end() || meas_failed->second == 0)
         {
             const string fom_name   = _opt_info.fom_name();
@@ -106,15 +109,18 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                     exit(EXIT_FAILURE);
                 }
                 double m_value = m_pair->second;
+                printf("constraint %s %s %g,  actual value: %g\n", c_name.c_str(), c_weight == 1 ? "<" : ">", c_value, m_value);
                 m_value *= c_weight;
                 c_value *= c_weight;
                 double penalty = m_value <= c_value ? 0 : m_value - c_value;
-                penalty *= (normalizer / c_value);
+                printf("penalty: %g\n", penalty);
+                penalty *= fabs((normalizer / c_value));
                 penalty *= penalty_weight;
-                assert(penalty > 0);
+                assert(penalty >= 0);
                 fom += penalty;
             }
         }
+        printf("idx: %d, fom: %g\n", idx, fom);
         return fom;
     };
 }
@@ -135,8 +141,8 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
         {
             const string meas_file              = meas_p.first;
             const vector<string> meas_var_names = meas_p.second;
-            const auto  tmp_measured            = parse_hspice_measure_file(meas_file);
-            if(tmp_measured.find("failed") != tmp_measured.end() && tmp_measured.find("fail")->second.at(0) == 1)
+            const auto  tmp_measured            = parse_hspice_measure_file(workspace + "/" + meas_file);
+            if(tmp_measured.find("failed") != tmp_measured.end() && tmp_measured.find("failed")->second.at(0) == 1)
             {
                 measured.clear();
                 measured["failed"] = 1;
