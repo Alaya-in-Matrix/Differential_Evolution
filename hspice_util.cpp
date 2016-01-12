@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <vector>
 #include <cassert>
@@ -10,7 +11,12 @@ void gen_param(const vector<string>& names, const vector <double>& values, const
     assert(names.size() == values.size());
     ofstream ofile;
     ofile.open(path);
-    assert(ofile.is_open());
+    // assert(ofile.is_open());
+    if(! ofile.is_open())
+    {
+        cerr << "File " << path << " can not be created" << endl;
+        exit(EXIT_FAILURE);
+    }
     for (size_t i = 0; i < names.size(); ++i)
     {
         ofile << ".param " << names[i] << " = " << values[i] << endl;
