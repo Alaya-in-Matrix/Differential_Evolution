@@ -21,7 +21,7 @@ pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
-love:obj/Evolution.o obj/hspice_util.o obj/love.o
+experiment:obj/Evolution.o obj/hspice_util.o obj/love.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 

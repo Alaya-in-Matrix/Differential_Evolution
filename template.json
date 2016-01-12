@@ -1,11 +1,8 @@
 {
     "iter_num": 600, 
     "init_num": 100, 
-    // where the output is stored
     "out_dir": "out",
-    // where the temperory spice files are stored
     "workspace": "workspace",
-    // design parameters
     "parameter": [{
         "name": "cm",
         "lb": 0.5,
@@ -182,7 +179,6 @@
         "testbench": "Single_ended.sp", 
         "sim_tool": "hspice64"
     },
-    // value measured from *.ma0 *.mt0 *.ms0
     "measured": [{
         "name": "gain",
         "from": "Single_ended.ma0"
