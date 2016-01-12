@@ -8,7 +8,8 @@ OBJ   = obj/Evolution.o \
 		obj/weixin.o \
 		obj/pengbo.o \
 		obj/hspice_util.o \
-		obj/love.o
+		obj/love.o \
+		obj/OptInfo.o
 
 .PHONY: all
 all:
@@ -21,7 +22,7 @@ pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
-experiment:obj/Evolution.o obj/hspice_util.o obj/love.o
+experiment:obj/Evolution.o obj/hspice_util.o obj/love.o obj/OptInfo.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 
