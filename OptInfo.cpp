@@ -96,9 +96,14 @@ void OptInfo::set_measured_vars()
         _measured_vars.reserve(meas_tree.size());
         for (auto node = meas_tree.begin(); node != meas_tree.end(); ++node)
         {
-            const string name    = node->second.get<string>("name");
-            const string from    = node->second.get<string>("from");
-            _measured_vars[name] = from;
+            const string meas_file = node->second.get<string>("file");
+            const ptree var_list   = node->second.get_child("meas");
+            vector<string> meas_var_names;
+            for(auto var : var_list)
+            {
+                meas_var_names.push_back(var.second.get_value<string>());
+            }
+            _measured_vars[meas_file] = meas_var_names;
         }
     }
     catch (ptree_error& e)
@@ -225,35 +230,35 @@ unsigned int OptInfo::thread_num() const noexcept
 {
     return _thread_num;
 }
-std::string OptInfo::out_dir() const noexcept
+string OptInfo::out_dir() const noexcept
 {
     return _out_dir;
 }
-std::string OptInfo::workspace() const noexcept
+string OptInfo::workspace() const noexcept
 {
     return _workspace;
 }
-std::string OptInfo::sim_tool() const noexcept
+string OptInfo::sim_tool() const noexcept
 {
     return _sim_tool;
 }
-std::string OptInfo::para_file() const noexcept
+string OptInfo::para_file() const noexcept
 {
     return _para_file;
 }
-std::string OptInfo::circuit_dir() const noexcept
+string OptInfo::circuit_dir() const noexcept
 {
     return _circuit_dir;
 }
-std::string OptInfo::testbench() const noexcept
+string OptInfo::testbench() const noexcept
 {
     return _testbench;
 }
-std::unordered_map<std::string, std::string> OptInfo::measured_vars() const noexcept
+unordered_map<string, vector<string>> OptInfo::measured_vars() const noexcept
 {
     return _measured_vars;
 }
-std::string OptInfo::fom_name() const noexcept
+string OptInfo::fom_name() const noexcept
 {
     return _fom_name;
 }
@@ -290,7 +295,12 @@ void OptInfo::print() const noexcept
     printf("measured variables: \n");
     for(auto meas_p : _measured_vars)
     {
-        printf("\t%s from %s\n", meas_p.first.c_str(), meas_p.second.c_str());
+        string file = meas_p.first;
+        printf("\t%s:\n", file.c_str());
+        for(auto var : meas_p.second)
+        {
+            printf("\t\t%s\n", var.c_str());
+        }
     }
     puts("==================================================================================");
     assert(_constraints.size() == _constr_directions.size());

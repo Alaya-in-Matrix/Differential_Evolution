@@ -47,9 +47,7 @@
         "sim_tool": "hspice64"
     },
     "measured": [
-        { "name": "gain", "from": "Single_ended.ma0" },
-        { "name": "ugf", "from": "Single_ended.ma0" },
-        { "name": "pm", "from": "Single_ended.ma0" }
+        {"file" : "Single_ended.ma0", "meas" : ["gain", "ugf", "pm"]}
     ],
     "spec": {
         "normalizer": 70,

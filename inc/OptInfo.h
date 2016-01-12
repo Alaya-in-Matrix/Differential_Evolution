@@ -34,7 +34,7 @@ class OptInfo
     const std::vector<std::string> _supported_sim_tool{"hspice", "hspice64", "hspicerf64"};
 
     // measured variables
-    std::unordered_map<std::string, std::string> _measured_vars;
+    std::unordered_map<std::string, std::vector<std::string>> _measured_vars;
 
     // spec
     // usage: auto w = OptDirectionWeight[Minimize]...
@@ -69,7 +69,7 @@ public:
     std::string circuit_dir() const noexcept;
     std::string testbench() const noexcept;
     std::string sim_tool() const noexcept;
-    std::unordered_map<std::string, std::string> measured_vars() const noexcept;
+    std::unordered_map<std::string, std::vector<std::string>> measured_vars() const noexcept;
     std::string fom_name() const noexcept;
     int fom_direction_weight() const noexcept;
     std::unordered_map<std::string, double> constraints() const noexcept;
