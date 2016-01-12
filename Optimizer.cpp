@@ -9,11 +9,11 @@
 #include <functional>
 #include <unordered_map>
 #include "hspice_util.h"
-#include "Optimizer.h"
 #include "Evolution.h"
-#include "OptInfo.h"
+#include "Config.h"
+#include "Optimizer.h"
 using namespace std;
-Optimizer::Optimizer(const OptInfo& opt_info)
+Optimizer::Optimizer(const Config& opt_info)
     : _opt_info(opt_info), _de_solver(nullptr)
 {}
 Optimizer::~Optimizer()

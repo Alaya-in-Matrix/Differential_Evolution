@@ -9,7 +9,7 @@
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-class OptInfo
+class Config
 {
     using ptree = boost::property_tree::ptree;
     // boost property tree;
@@ -54,8 +54,8 @@ public:
     // I perhaps should use TOML format config file
     // as it is more human-readable
     enum SpecFormat { Json = 0, TOML }; 
-    OptInfo(std::string, SpecFormat = Json);
-    OptInfo(const ptree& );
+    Config(std::string, SpecFormat = Json);
+    Config(const ptree& );
     void print() const noexcept;
     decltype(_para_names) get_para_names() const noexcept;
     decltype(_ranges)     get_para_ranges() const noexcept;;

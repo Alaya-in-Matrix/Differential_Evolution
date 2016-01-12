@@ -9,7 +9,7 @@ OBJ   = obj/Evolution.o \
 		obj/pengbo.o \
 		obj/hspice_util.o \
 		obj/love.o \
-		obj/OptInfo.o \
+		obj/Config.o \
 		obj/Optimizer.o \
 
 .PHONY: all
@@ -23,7 +23,7 @@ pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
 weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
-experiment:obj/Evolution.o obj/hspice_util.o obj/love.o obj/OptInfo.o obj/Optimizer.o
+experiment:obj/Evolution.o obj/hspice_util.o obj/love.o obj/Config.o obj/Optimizer.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 

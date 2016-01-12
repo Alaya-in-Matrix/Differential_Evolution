@@ -7,7 +7,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/optional.hpp>
-#include "OptInfo.h"
+#include "Config.h"
 #include "Optimizer.h"
 using namespace std;
 int main(int arg_num, char** args)
@@ -17,7 +17,7 @@ int main(int arg_num, char** args)
         cerr << "Usage: " << args[0] << " config-json-file-name" << endl;
         return EXIT_FAILURE;
     }
-    OptInfo config(args[1]);
+    Config config(args[1]);
     config.print();
     
     Optimizer opt(config);

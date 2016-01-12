@@ -9,11 +9,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include "OptInfo.h"
+#include "Config.h"
 #include "hspice_util.h"
 using namespace std;
 using namespace boost::property_tree;
-void OptInfo::set_para()
+void Config::set_para()
 {
     // I really miss Maybe monad in haskell!
     ptree para_tree;
@@ -51,7 +51,7 @@ void OptInfo::set_para()
         exit(EXIT_FAILURE);
     }
 }
-void OptInfo::set_opt_settings() noexcept
+void Config::set_opt_settings() noexcept
 {
     _iter_num   = _info_tree.get("iter_num", 600);
     _para_num   = _para_names.size();
@@ -60,7 +60,7 @@ void OptInfo::set_opt_settings() noexcept
     _workspace  = _info_tree.get("workspace", "workspace");
     _thread_num = _info_tree.get("thread_num", 1);
 }
-void OptInfo::set_sim_info()
+void Config::set_sim_info()
 {
     try
     {
@@ -87,7 +87,7 @@ void OptInfo::set_sim_info()
         exit(EXIT_FAILURE);
     }
 }
-void OptInfo::set_measured_vars()
+void Config::set_measured_vars()
 {
     try
     {
@@ -113,7 +113,7 @@ void OptInfo::set_measured_vars()
     }
 }
 
-void OptInfo::set_spec()
+void Config::set_spec()
 {
     auto get_opt_direction = [](string type) -> int
     {
@@ -155,7 +155,7 @@ void OptInfo::set_spec()
         exit(EXIT_FAILURE);
     }
 }
-OptInfo::OptInfo(string config, SpecFormat format)
+Config::Config(string config, SpecFormat format)
 {
     try
     {
@@ -184,7 +184,7 @@ OptInfo::OptInfo(string config, SpecFormat format)
         exit(EXIT_FAILURE);
     }
 }
-OptInfo::OptInfo(const ptree& pt)
+Config::Config(const ptree& pt)
     : _info_tree(pt)
 {
     try
@@ -206,83 +206,83 @@ OptInfo::OptInfo(const ptree& pt)
         exit(EXIT_FAILURE);
     }
 }
-vector<string> OptInfo::get_para_names() const noexcept
+vector<string> Config::get_para_names() const noexcept
 {
     return _para_names;
 }
-vector<pair<double, double>> OptInfo::get_para_ranges() const noexcept
+vector<pair<double, double>> Config::get_para_ranges() const noexcept
 {
     return _ranges;
 }
-unsigned int OptInfo::iter_num() const noexcept
+unsigned int Config::iter_num() const noexcept
 {
     return _iter_num;
 }
-unsigned int OptInfo::para_num() const noexcept
+unsigned int Config::para_num() const noexcept
 {
     return _para_num;
 }
-unsigned int OptInfo::population() const noexcept
+unsigned int Config::population() const noexcept
 {
     return _population;
 }
-unsigned int OptInfo::thread_num() const noexcept
+unsigned int Config::thread_num() const noexcept
 {
     return _thread_num;
 }
-string OptInfo::out_dir() const noexcept
+string Config::out_dir() const noexcept
 {
     return _out_dir;
 }
-string OptInfo::workspace() const noexcept
+string Config::workspace() const noexcept
 {
     return _workspace;
 }
-string OptInfo::sim_tool() const noexcept
+string Config::sim_tool() const noexcept
 {
     return _sim_tool;
 }
-string OptInfo::para_file() const noexcept
+string Config::para_file() const noexcept
 {
     return _para_file;
 }
-string OptInfo::circuit_dir() const noexcept
+string Config::circuit_dir() const noexcept
 {
     return _circuit_dir;
 }
-string OptInfo::testbench() const noexcept
+string Config::testbench() const noexcept
 {
     return _testbench;
 }
-unordered_map<string, vector<string>> OptInfo::measured_vars() const noexcept
+unordered_map<string, vector<string>> Config::measured_vars() const noexcept
 {
     return _measured_vars;
 }
-double OptInfo::penalty_weight() const noexcept
+double Config::penalty_weight() const noexcept
 {
     return _penalty_weight;
 }
-double OptInfo::constraint_normalizer() const noexcept
+double Config::constraint_normalizer() const noexcept
 {
     return _normalizer;
 }
-string OptInfo::fom_name() const noexcept
+string Config::fom_name() const noexcept
 {
     return _fom_name;
 }
-int OptInfo::fom_direction_weight() const noexcept
+int Config::fom_direction_weight() const noexcept
 {
     return _fom_direction;
 }
-std::unordered_map<std::string, double> OptInfo::constraints() const noexcept
+std::unordered_map<std::string, double> Config::constraints() const noexcept
 {
     return _constraints;
 }
-std::unordered_map<std::string, int> OptInfo::constraint_direction_weight() const noexcept
+std::unordered_map<std::string, int> Config::constraint_direction_weight() const noexcept
 {
     return _constr_directions;
 }
-void OptInfo::print() const noexcept
+void Config::print() const noexcept
 {
     printf("iter num: %d\n", _iter_num);
     printf("dimension: %d\n", _para_num);
