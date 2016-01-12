@@ -58,6 +58,7 @@ void OptInfo::set_opt_settings() noexcept
     _population = _info_tree.get("init_num", 10 * _para_num);
     _out_dir    = _info_tree.get("out_dir", "out");
     _workspace  = _info_tree.get("workspace", "workspace");
+    _thread_num = _info_tree.get("thread_num", 1);
 }
 void OptInfo::set_sim_info()
 {
@@ -220,6 +221,10 @@ unsigned int OptInfo::population() const noexcept
 {
     return _population;
 }
+unsigned int OptInfo::thread_num() const noexcept
+{
+    return _thread_num;
+}
 std::string OptInfo::out_dir() const noexcept
 {
     return _out_dir;
@@ -269,6 +274,7 @@ void OptInfo::print() const noexcept
     printf("iter num: %d\n", _iter_num);
     printf("dimension: %d\n", _para_num);
     printf("population: %d\n", _population);
+    printf("thread_num: %d\n", _thread_num);
     printf("output directory: %s\n", _out_dir.c_str());
     printf("workspace: %s\n", _workspace.c_str());
     printf("circuit: %s/%s\n", _circuit_dir.c_str(), _testbench.c_str());

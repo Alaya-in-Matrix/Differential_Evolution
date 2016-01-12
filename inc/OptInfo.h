@@ -9,7 +9,6 @@
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include "hspice_util.h"
 class OptInfo
 {
     using ptree = boost::property_tree::ptree;
@@ -23,6 +22,7 @@ class OptInfo
     unsigned int _iter_num; 
     unsigned int _para_num;
     unsigned int _population;
+    unsigned int _thread_num;
     std::string  _out_dir;
     std::string  _workspace;
 
@@ -62,6 +62,7 @@ public:
     unsigned int iter_num() const noexcept;
     unsigned int para_num() const noexcept;
     unsigned int population() const noexcept;
+    unsigned int thread_num() const noexcept;
     std::string out_dir() const noexcept;
     std::string workspace() const noexcept;
     std::string para_file() const noexcept;

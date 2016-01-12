@@ -2,6 +2,7 @@
     "iter_num": 600, 
     "init_num": 100, 
     "out_dir": "out",
+    "thread_num":2, 
     "workspace": "workspace",
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 10 },
