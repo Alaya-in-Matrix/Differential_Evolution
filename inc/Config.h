@@ -35,6 +35,7 @@ class Config
 
     // measured variables
     std::unordered_map<std::string, std::vector<std::string>> _measured_vars;
+    std::unordered_map<std::string, std::string> _measured_func;
 
     // spec
     // usage: auto w = OptDirectionWeight[Minimize]...
@@ -76,5 +77,6 @@ public:
     int fom_direction_weight() const noexcept;
     std::unordered_map<std::string, double> constraints() const noexcept;
     std::unordered_map<std::string, int> constraint_direction_weight() const noexcept;
+    double process_measured(const std::string, const std::vector<double>&) const noexcept;
 };
 #endif

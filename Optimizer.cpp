@@ -136,7 +136,7 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
             const string meas_file              = meas_p.first;
             const vector<string> meas_var_names = meas_p.second;
             const auto  tmp_measured            = parse_hspice_measure_file(meas_file);
-            if(tmp_measured.find("failed") != tmp_measured.end())
+            if(tmp_measured.find("failed") != tmp_measured.end() && tmp_measured.find("fail")->second.at(0) == 1)
             {
                 measured.clear();
                 measured["failed"] = 1;
@@ -156,7 +156,8 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
                         cerr << var_name << " is not measured in your testbench" << endl;
                         exit(EXIT_FAILURE);
                     }
-                    measured[var_name] = tmp_measured.find(var_name)->second;
+                    vector<double> meas_vec = tmp_measured.find(var_name)->second;
+                    measured[var_name] = _opt_info.process_measured(var_name, meas_vec);
                 }
             }
         }

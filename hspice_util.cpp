@@ -24,9 +24,9 @@ void gen_param(const vector<string>& names, const vector <double>& values, const
     ofile.close();
 }
 
-unordered_map<string, double> parse_hspice_measure_file(string path)
+unordered_map<string, vector<double>> parse_hspice_measure_file(string path)
 {
-    unordered_map<string, double> result;
+    unordered_map<string, vector<double>> result;
     ifstream ma0_file(path);
     string ignore_lines;
     while (getline(ma0_file, ignore_lines))
@@ -36,7 +36,7 @@ unordered_map<string, double> parse_hspice_measure_file(string path)
         for (size_t i = 0; i < title_line.size(); ++i)
             ignore_lines[i] = toupper(ignore_lines[i]);
 
-        // check whether is this line is a title line
+        // check whether this line is a title line
         if (ignore_lines.size() >= title_line.size() && ignore_lines.substr(0, title_line.size()) == title_line)
             break;
     }
@@ -59,12 +59,21 @@ unordered_map<string, double> parse_hspice_measure_file(string path)
         values.push_back(atof(token.c_str()));
     }
     if (failed)
-        result["failed"] = 1;
+        result.insert(make_pair("failed", vector<double>{1}));
     else
     {
-        result["failed"] = 0;
-        for (size_t i = 0; i < names.size(); ++i)
-            result.insert(make_pair(names[i], values[i]));
+        result.insert(make_pair("failed", vector<double>{0}));
+        size_t names_size  = names.size();
+        size_t values_size = values.size();
+        assert(values_size % names_size == 0);
+        for(size_t i = 0; i < names_size; ++i)
+        {
+            result.insert(make_pair(names[i], vector<double>()));
+        }
+        for(size_t i = 0; i < values_size; ++i)
+        {
+            result[names[i % names_size]].push_back(values[i]);
+        }
     }
     return result;
 }

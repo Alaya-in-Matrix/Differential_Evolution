@@ -2,8 +2,8 @@
     "iter_num": 600, 
     "init_num": 100, 
     "out_dir": "out",
-    "thread_num":2, 
     "workspace": "workspace",
+    "thread_num":2, 
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 10 },
         { "name": "ival", "lb": 0.5, "ub": 3 },
@@ -47,8 +47,10 @@
         "sim_tool": "hspice64"
     },
     "measured": [
-        {"file" : "Single_ended.ma0", "meas" : ["gain", "ugf", "pm"]}
-    ],
+        {"name" : "gain", "file" : "Single_ended.ma0", "func" : "min"}, 
+        {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "head"}, 
+        {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "head"}
+    ], 
     "spec": {
         "normalizer": 70,
         "penalty_weight": 3,
@@ -57,8 +59,8 @@
             "type": "maximize"
         },
         "constraints": [
-            { "name": "ugf", "type": "maximize", "value": 70 },
-            { "name": "pm", "type": "maximize", "value": 60 }
+            { "name": "ugf", "type": "maximize", "value": 200 },
+            { "name": "pm",  "type": "maximize", "value": 60 }
         ]
     }
 }

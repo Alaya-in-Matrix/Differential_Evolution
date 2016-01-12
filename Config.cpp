@@ -93,22 +93,31 @@ void Config::set_measured_vars()
     {
         ptree meas_tree = _info_tree.get_child("measured");
         _measured_vars.clear();
-        _measured_vars.reserve(meas_tree.size());
-        for (auto node = meas_tree.begin(); node != meas_tree.end(); ++node)
+        _measured_func.clear();
+        for(const auto& node : meas_tree)
         {
-            const string meas_file = node->second.get<string>("file");
-            const ptree var_list   = node->second.get_child("meas");
-            vector<string> meas_var_names;
-            for(auto var : var_list)
-            {
-                meas_var_names.push_back(var.second.get_value<string>());
-            }
-            _measured_vars[meas_file] = meas_var_names;
+            const auto& node_tree = node.second;
+            const string name      = node_tree.get<string>("name");
+            const string meas_file = node_tree.get<string>("file");
+            const string func_str  = node_tree.get<string>("func");
+            if(_measured_vars.find(meas_file) == _measured_vars.end())
+                _measured_vars[meas_file] = vector<string>{name};
+            else
+                _measured_vars[meas_file].push_back(name);
+
+            if(_measured_func.find(name) != _measured_func.end())
+                throw new invalid_argument("variable " + name + " is measured twice!");
+            _measured_func[name] = func_str;
         }
     }
     catch (ptree_error& e)
     {
         cerr << "Fail to get measure info: " << e.what() << endl;
+        exit(EXIT_FAILURE);
+    }
+    catch (exception& e)
+    {
+        cerr << "Exception: " << e.what() << endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -314,12 +323,40 @@ void Config::print() const noexcept
     assert(_constraints.size() == _constr_directions.size());
     for(auto constr_pair : _constraints)
     {
-        string name      = constr_pair.first;
-        double value     = constr_pair.second;
+        const string name      = constr_pair.first;
+        const double value     = constr_pair.second;
         auto c_direction = _constr_directions.find(name);
         assert(c_direction != _constr_directions.end());
-        string cmp_str   = c_direction->second == 1 ? "<" : ">";
+        const string cmp_str   = c_direction->second == 1 ? "<" : ">";
         printf("constraint %s %s %g\n", name.c_str(), cmp_str.c_str(), value);
     }
     printf("FOM: %s %s\n", _fom_direction == 1 ? "minimize" : "maximize", _fom_name.c_str());
+}
+double Config::process_measured(const string var_name, const vector<double>& data) const noexcept
+{
+    assert(! data.empty());
+    const auto iter = _measured_func.find(var_name);
+    if(iter == _measured_func.end())
+    {
+        cerr << "function can not find for variable " << var_name << endl;
+        exit(EXIT_FAILURE);
+    }
+    const string func_str = iter->second;
+    if(func_str == "min")
+    {
+        return *(min_element(data.begin(), data.end()));
+    }
+    else if(func_str == "max")
+    {
+        return *(max_element(data.begin(), data.end()));
+    }
+    else if(func_str == "head")
+    {
+        return data[0];
+    }
+    else 
+    {
+        cerr << "Unsupported function: " << func_str << endl;
+        exit(EXIT_FAILURE);
+    }
 }
