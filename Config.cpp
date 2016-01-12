@@ -5,7 +5,6 @@
 #include <cassert>
 #include <unordered_map>
 #include <string>
-#include <boost/algorithm/algorithm.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
