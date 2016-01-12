@@ -78,13 +78,20 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
     {
         double fom = numeric_limits<double>::infinity();
         const auto measured = simulation(idx, input);
-        printf("idx: %d, measure done\n", idx);
         auto meas_failed    = measured.find("failed");
-        if(meas_failed == measured.end() || meas_failed->second == 0)
+        if (meas_failed == measured.end() || meas_failed->second == 0)
         {
+            printf("Population Idx: %d, ", idx);
+            for (auto p : measured)
+            {
+                if (p.first != "failed")
+                {
+                    printf("%s = %.2f, ", p.first.c_str(), p.second);
+                }
+            }
             const string fom_name   = _opt_info.fom_name();
             const double fom_weight = _opt_info.fom_direction_weight();
-            if(measured.find(fom_name) == measured.end())
+            if (measured.find(fom_name) == measured.end())
             {
                 cerr << "fom " + fom_name + " is not measured" << endl;
                 exit(EXIT_FAILURE);
@@ -95,7 +102,8 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             const double penalty_weight = _opt_info.penalty_weight();
             const double normalizer     = _opt_info.constraint_normalizer();
             assert(constraints.size()  == constr_w.size());
-            for(auto c_pair : constraints)
+            double penalty = 0;
+            for (auto c_pair : constraints)
             {
                 string c_name        = c_pair.first;
                 double c_value       = c_pair.second;
@@ -103,24 +111,34 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 assert(weight_p != constr_w.end());
                 int c_weight         = weight_p->second;
                 const auto m_pair = measured.find(c_name);
-                if(m_pair == measured.end())
+                if (m_pair == measured.end())
                 {
                     cerr << "Constraint variable " << c_name << " is not measured" << endl;
                     exit(EXIT_FAILURE);
                 }
                 double m_value = m_pair->second;
-                printf("constraint %s %s %g,  actual value: %g\n", c_name.c_str(), c_weight == 1 ? "<" : ">", c_value, m_value);
                 m_value *= c_weight;
                 c_value *= c_weight;
-                double penalty = m_value <= c_value ? 0 : m_value - c_value;
-                printf("penalty: %g\n", penalty);
-                penalty *= fabs((normalizer / c_value));
-                penalty *= penalty_weight;
+                double tmp_penalty = m_value <= c_value ? 0 : m_value - c_value;
+                tmp_penalty *= fabs((normalizer / c_value));
+                penalty += tmp_penalty;
                 assert(penalty >= 0);
-                fom += penalty;
+            }
+            penalty *= penalty_weight;
+            fom += penalty;
+            printf("penalty = %g, fom: %g\n", penalty, fom);
+            if(penalty == 0)
+            {
+                string out_path  = "out/good_" + to_string(idx) + "_" + to_string(fom);
+                string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
+                string cmd = "cp " + para_path + " " + out_path;
+                int ret = system(cmd.c_str());
             }
         }
-        printf("idx: %d, fom: %g\n", idx, fom);
+        else
+        {
+            printf("Population Idx: %d, failed\n", idx);
+        }
         return fom;
     };
 }
@@ -137,12 +155,12 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
     int ret = system(sim_cmd.c_str());
     if (ret == 0)
     {
-        for(auto meas_p : measured_vars)
+        for (auto meas_p : measured_vars)
         {
             const string meas_file              = meas_p.first;
             const vector<string> meas_var_names = meas_p.second;
             const auto  tmp_measured            = parse_hspice_measure_file(workspace + "/" + meas_file);
-            if(tmp_measured.find("failed") != tmp_measured.end() && tmp_measured.find("failed")->second.at(0) == 1)
+            if (tmp_measured.find("failed") != tmp_measured.end() && tmp_measured.find("failed")->second.at(0) == 1)
             {
                 measured.clear();
                 measured["failed"] = 1;
@@ -150,14 +168,14 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
             }
             else
             {
-                for(const string var_name : meas_var_names)
+                for (const string var_name : meas_var_names)
                 {
-                    if(measured.find(var_name) != measured.end())
+                    if (measured.find(var_name) != measured.end())
                     {
                         cerr << var_name << " has been measured in more than one file" << endl;
                         exit(EXIT_FAILURE);
                     }
-                    if(tmp_measured.find(var_name) == tmp_measured.end())
+                    if (tmp_measured.find(var_name) == tmp_measured.end())
                     {
                         cerr << var_name << " is not measured in your testbench" << endl;
                         exit(EXIT_FAILURE);

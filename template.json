@@ -1,6 +1,6 @@
 {
     "iter_num": 600, 
-    "init_num": 100, 
+    "init_num": 373, 
     "out_dir": "out",
     "workspace": "workspace",
     "thread_num":1, 
@@ -52,7 +52,7 @@
         {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "head"}
     ], 
     "spec": {
-        "normalizer": 70,
+        "normalizer": 200,
         "penalty_weight": 3,
         "fom": {
             "name": "gain",
