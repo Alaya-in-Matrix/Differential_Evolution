@@ -133,9 +133,10 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             printf("penalty = %g, fom: %g\n", penalty, fom);
             if (penalty == 0)
             {
-                string out_path  = "out/good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
                 string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
-                string cmd = "cp " + para_path + " " + out_path;
+                string out_path  = _opt_info.out_dir() + "/";
+                out_path       += "good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
+                string cmd       = "cp " + para_path + " " + out_path;
                 int ret = system(cmd.c_str());
                 if (ret != 0)
                 {
