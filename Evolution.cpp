@@ -12,8 +12,7 @@
 #include "Evolution.h"
 #include "util.h"
 using namespace std;
-// mt19937_64 _engine(random_device{}());
-mt19937_64 _engine(0);
+mt19937_64 _engine(random_device{}());
 DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
                     , RangeVec rg
                     , unsigned int iter_num
