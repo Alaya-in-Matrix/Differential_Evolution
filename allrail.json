@@ -1,0 +1,65 @@
+{
+    "iter_num": 600, 
+    "init_num": 373, 
+    "out_dir": "out/allrail",
+    "workspace": "workspace/allrail",
+    "thread_num":1, 
+    "parameter": [
+        { "name": "cm", "lb": 0.5, "ub": 10 },
+        { "name": "ival", "lb": 0.5, "ub": 3 },
+        { "name": "l_fixed", "lb": 0.35, "ub": 10 },
+        { "name": "w10", "lb": 0.4, "ub": 20 },
+        { "name": "w11", "lb": 0.4, "ub": 20 },
+        { "name": "w12", "lb": 0.4, "ub": 20 },
+        { "name": "w13", "lb": 0.4, "ub": 20 },
+        { "name": "w14", "lb": 0.4, "ub": 20 },
+        { "name": "w15", "lb": 0.4, "ub": 20 },
+        { "name": "w16_18", "lb": 0.4, "ub": 20 },
+        { "name": "w17_19", "lb": 0.4, "ub": 20 },
+        { "name": "w1_2", "lb": 0.4, "ub": 20 },
+        { "name": "w20", "lb": 0.4, "ub": 20 },
+        { "name": "w21", "lb": 0.4, "ub": 20 },
+        { "name": "w22_23", "lb": 0.4, "ub": 20 },
+        { "name": "w24", "lb": 0.4, "ub": 20 },
+        { "name": "w25", "lb": 0.4, "ub": 20 },
+        { "name": "w26", "lb": 0.4, "ub": 20 },
+        { "name": "w27", "lb": 0.4, "ub": 20 },
+        { "name": "w28", "lb": 0.4, "ub": 20 },
+        { "name": "w29", "lb": 0.4, "ub": 20 },
+        { "name": "w30", "lb": 0.4, "ub": 20 },
+        { "name": "w31", "lb": 0.4, "ub": 20 },
+        { "name": "w32", "lb": 0.4, "ub": 20 },
+        { "name": "w33", "lb": 0.4, "ub": 20 },
+        { "name": "w34", "lb": 0.4, "ub": 20 },
+        { "name": "w35", "lb": 0.4, "ub": 20 },
+        { "name": "w3_4", "lb": 0.4, "ub": 20 },
+        { "name": "w5", "lb": 0.4, "ub": 20 },
+        { "name": "w6", "lb": 0.4, "ub": 20 },
+        { "name": "w7", "lb": 0.4, "ub": 20 },
+        { "name": "w8", "lb": 0.4, "ub": 20 },
+        { "name": "w9", "lb": 0.4, "ub": 20 },
+        { "name": "vin_cm", "lb": 0, "ub": 3.3 }
+    ],
+    "simulation": {
+        "para_file": "param.sp",
+        "circuit_dir": "circuit/weixin-all-rail",
+        "testbench": "Single_ended.sp", 
+        "sim_tool": "hspice64"
+    },
+    "measured": [
+        {"name" : "gain", "file" : "Single_ended.ma0", "func" : "min"}, 
+        {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min"}, 
+        {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min"}
+    ], 
+    "spec": {
+        "penalty_weight": 3,
+        "fom": {
+            "name": "gain",
+            "type": "maximize"
+        },
+        "constraints": [
+            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 1},
+            { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 1}
+        ]
+    }
+}
