@@ -148,6 +148,7 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
         {
             printf("Iter: %d, Population Idx: %d, failed\n", iter_counter, idx);
         }
+        fflush(stdout);
         return fom;
     };
 }
