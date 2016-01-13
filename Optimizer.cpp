@@ -131,6 +131,10 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
                 string cmd = "cp " + para_path + " " + out_path;
                 int ret = system(cmd.c_str());
+                if(ret != 0)
+                {
+                    cerr << "fail to execute: " << cmd << endl;
+                }
             }
         }
         else
@@ -142,11 +146,14 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 }
 unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const vector<double>& params) const
 {
-    const string workspace    = _opt_info.workspace() + "/" + to_string(pop_idx);
-    const string para_path    = workspace + "/" + _opt_info.para_file();
-    const string netlist_path = workspace + "/" + _opt_info.testbench();
-    const string output_path  = workspace + "/" + "output.info";
-    const string sim_cmd      = _opt_info.sim_tool() + " " + netlist_path + " -o " + workspace + " >  " + output_path + " 2>&1";
+    const string workspace = _opt_info.workspace() + "/" + to_string(pop_idx);
+    const string testbench = _opt_info.testbench();
+    const string sim_tool  = _opt_info.sim_tool();
+    const string para_path = workspace + "/" + _opt_info.para_file();
+    const string sim_cmd   = "cd " + workspace
+                           + " && " 
+                           + sim_tool + " " + testbench + " > output.info 2>&1";
+
     unordered_map<string, vector<string>> measured_vars = _opt_info.measured_vars();
     unordered_map<string, double> measured;
     gen_param(_opt_info.get_para_names(), params, para_path);

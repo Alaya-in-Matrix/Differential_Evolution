@@ -58,7 +58,7 @@ vss vss 0 0
 ** .meas dc Iq max 'abs(i(vdd_ac))' from=0 to=vdd_v
 
 .dc vdd_ac vdd_v vdd_v vdd_v
-.meas dc iq find 'abs(i(vdd_ac))' at vdd_v
+.meas dc iq find 'abs(i(vdd_ac))/1e-6' at vdd_v
 
 ** .param vin_incre='vdd_v*0.005'
 ** .dc vin_sw 0 vdd_v vin_incre 
@@ -66,8 +66,11 @@ vss vss 0 0
 
 .ac dec 100 1 50Meg
 .meas ac gain max  vdb(vo_ac)   from=1 to=50Meg
-.meas ac ugf  when vdb(vo_ac)=0
-.meas ac pm   find vp(vo_ac)    at=ugf
+.meas ac ugf_actual  when vdb(vo_ac)=0
+.meas ac ugf=param('ugf_actual/1e6')
+* .meas ac pm   find vp(vo_ac)    at=ugf_actual
+.meas ac min_phase   min vp(vo_ac) from=1 to=ugf_actual
+.meas ac pm=param('min_phase+180')
 .meas ac gm   find vdb(vo_ac)   when   vp(vo_ac)=-178
 .meas ac psr  min  vdb(vo_psr)  from=1 to=50Meg
 .meas ac cmrr min  vdb(vo_cmrr) from=1 to=50Meg
@@ -77,8 +80,10 @@ vss vss 0 0
 ** .print v(vin_tr+) v(vo_tr)
 .meas tran vomax max v(vo_tr)
 .meas tran vomin min v(vo_tr)
-.meas tran srr deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' rise=1
-.meas tran srf deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' fall=1
+.meas tran srr_actual deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' rise=1
+.meas tran srf_actual deriv v(vo_tr) when v(vo_tr)='vomin + 0.5 * (vomax - vomin)' fall=1
+.meas tran srr=param('abs(srr_actual)/1e6') 
+.meas tran srf=param('abs(srf_actual)/1e6') 
 ** .meas tran trise trig v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' rise = 1 targ v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' rise = 1
 ** .meas tran tfall trig v(vo_tr) val = 'vomin + 0.9 * (vomax - vomin)' fall = 1 targ v(vo_tr) val = 'vomin + 0.1 * (vomax - vomin)' fall = 1
 .end
