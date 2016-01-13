@@ -3,7 +3,7 @@
     "init_num": 250, 
     "out_dir": "out/pengbo",
     "workspace": "workspace/pengbo",
-    "thread_num":1, 
+    "thread_num":4, 
     "parameter": [
         { "name": "ib"   , "lb":1.7     , "ub":2.2}, 
         { "name": "wa2"  , "lb":5e0     , "ub":8e0}, 
@@ -51,7 +51,7 @@
             "type": "minimize"
         },
         "constraints": [
-            { "name": "gain", "type": "maximize", "value": 1 , "weight" : 1}
+            { "name": "gain", "type": "maximize", "value": 1 , "weight" : 0}
             , { "name": "pm",  "type": "maximize", "value":  52.5 , "weight" : 0.95} 
             , { "name": "ugf",  "type": "maximize", "value": 0.92 , "weight" : 54.3} 
             , { "name": "srr",  "type": "maximize", "value": 0.18 ,  "weight" : 277}

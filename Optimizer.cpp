@@ -76,12 +76,18 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 {
     return [&](unsigned int idx,  const vector<double>& input) -> double
     {
+
         double fom = numeric_limits<double>::infinity();
         const auto measured = simulation(idx, input);
         auto meas_failed    = measured.find("failed");
+
+        static int iter_counter = 0;
+        #pragma omp atomic
+        iter_counter = iter_counter + 1;
+
         if (meas_failed == measured.end() || meas_failed->second == 0)
         {
-            printf("Population Idx: %d, ", idx);
+            printf("Iter: %d, Population Idx: %d, ", iter_counter, idx);
             for (auto p : measured)
             {
                 if (p.first != "failed")
@@ -125,13 +131,13 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             penalty *= penalty_weight;
             fom += penalty;
             printf("penalty = %g, fom: %g\n", penalty, fom);
-            if(penalty == 0)
+            if (penalty == 0)
             {
-                string out_path  = "out/good_" + to_string(idx) + "_" + to_string(fom);
+                string out_path  = "out/good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
                 string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
                 string cmd = "cp " + para_path + " " + out_path;
                 int ret = system(cmd.c_str());
-                if(ret != 0)
+                if (ret != 0)
                 {
                     cerr << "fail to execute: " << cmd << endl;
                 }
@@ -139,7 +145,7 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
         }
         else
         {
-            printf("Population Idx: %d, failed\n", idx);
+            printf("Iter: %d, Population Idx: %d, failed\n", iter_counter, idx);
         }
         return fom;
     };
@@ -151,8 +157,8 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
     const string sim_tool  = _opt_info.sim_tool();
     const string para_path = workspace + "/" + _opt_info.para_file();
     const string sim_cmd   = "cd " + workspace
-                           + " && " 
-                           + sim_tool + " " + testbench + " > output.info 2>&1";
+                             + " && "
+                             + sim_tool + " " + testbench + " > output.info 2>&1";
 
     unordered_map<string, vector<string>> measured_vars = _opt_info.measured_vars();
     unordered_map<string, double> measured;
