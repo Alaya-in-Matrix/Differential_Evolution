@@ -35,22 +35,22 @@ void Optimizer::init()
         string cmd;
         cmd = "mkdir -p " + out_dir;
         ret = system(cmd.c_str());
-        if (ret != 0) throw new runtime_error("Fail to execute: " + cmd);
+        if (ret != 0) throw runtime_error("Fail to execute: " + cmd);
 
         cmd = "mkdir -p " + workspace;
         ret = system(cmd.c_str());
-        if (ret != 0) throw new runtime_error("Fail to execute: " + cmd);
+        if (ret != 0) throw runtime_error("Fail to execute: " + cmd);
 
         cmd = "mkdir -p " + workspace;
         ret = system(cmd.c_str());
-        if (ret != 0) throw new runtime_error("Fail to execute: " + cmd);
+        if (ret != 0) throw runtime_error("Fail to execute: " + cmd);
 
         for (unsigned int i = 0; i < population; ++i)
         {
             string path = workspace + "/" + to_string(i);
             cmd = "mkdir -p " + path + " && cp " + circuit_dir + "/* " + path;
             ret = system(cmd.c_str());
-            if (ret != 0) throw new runtime_error("Fail to execute: " + cmd);
+            if (ret != 0) throw runtime_error("Fail to execute: " + cmd);
         }
         cout << "Init done" << endl;
     }

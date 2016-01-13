@@ -29,7 +29,7 @@ void Config::set_para() { // I really miss Maybe monad in haskell!
             _para_names.push_back(name);
             _ranges.push_back(make_pair(lb, ub));
             if (lb > ub)
-                throw new invalid_argument(name + ": lb < ub");
+                throw invalid_argument(name + ": lb < ub");
         }
     }
     catch (ptree_error& e)
@@ -70,7 +70,7 @@ void Config::set_sim_info()
             string err_msg = "Unsupported simulation tool: " + _sim_tool + ". ";
             err_msg += boost::algorithm::join(_supported_sim_tool, ", ");
             err_msg += ". ";
-            throw new invalid_argument(err_msg);
+            throw invalid_argument(err_msg);
         }
     }
     catch (ptree_error& e)
@@ -103,7 +103,7 @@ void Config::set_measured_vars()
                 _measured_vars[meas_file].push_back(name);
 
             if(_measured_func.find(name) != _measured_func.end())
-                throw new invalid_argument("variable " + name + " is measured twice!");
+                throw invalid_argument("variable " + name + " is measured twice!");
             _measured_func[name] = func_str;
         }
     }
@@ -170,7 +170,7 @@ Config::Config(string config, SpecFormat format)
             read_json(config, _info_tree);
             break;
         default:
-            throw new invalid_argument("Only support json format config file now");
+            throw invalid_argument("Only support json format config file now");
         }
         set_para();
         set_opt_settings();
