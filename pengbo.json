@@ -1,9 +1,9 @@
 {
-    "iter_num": 600, 
+    "iter_num": 100, 
     "init_num": 250, 
     "out_dir": "out/pengbo",
     "workspace": "workspace/pengbo",
-    "thread_num":4, 
+    "thread_num":16, 
     "parameter": [
         { "name": "ib"   , "lb":1.7     , "ub":2.2}, 
         { "name": "wa2"  , "lb":5e0     , "ub":8e0}, 
