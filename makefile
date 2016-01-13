@@ -3,12 +3,12 @@ FLAGS = -std=c++11 -O3 -fopenmp -I inc
 SRC   = Evolution.cpp \
 		weixin.cpp \
 		hspice_util.cpp \
-		love.cpp
+		main.cpp
 OBJ   = obj/Evolution.o \
 		obj/weixin.o \
 		obj/pengbo.o \
 		obj/hspice_util.o \
-		obj/love.o \
+		obj/main.o \
 		obj/Config.o \
 		obj/Optimizer.o \
 
@@ -17,13 +17,13 @@ all:
 	make pengbo
 	make weixin
 
-pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
-	$(CXX) $^ -o $@ $(FLAGS)
+# pengbo: obj/Evolution.o obj/hspice_util.o obj/pengbo.o
+# 	$(CXX) $^ -o $@ $(FLAGS)
 
-weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
-	$(CXX) $^ -o $@ $(FLAGS)
+# weixin:obj/Evolution.o obj/hspice_util.o obj/weixin.o
+# 	$(CXX) $^ -o $@ $(FLAGS)
 
-experiment:obj/Evolution.o obj/hspice_util.o obj/love.o obj/Config.o obj/Optimizer.o
+solver:obj/Evolution.o obj/hspice_util.o obj/main.o obj/Config.o obj/Optimizer.o
 	$(CXX) $^ -o $@ $(FLAGS)
 
 
