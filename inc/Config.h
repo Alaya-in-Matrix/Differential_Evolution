@@ -1,5 +1,4 @@
-#ifndef __OPT_INFO__
-#define __OPT_INFO__
+#pragma once
 #include <cstdio>
 #include <iostream>
 #include <fstream>
@@ -77,4 +76,3 @@ public:
     std::unordered_map<std::string, double> constraints_weight() const noexcept;
     double process_measured(const std::string, const std::vector<double>&) const noexcept;
 };
-#endif

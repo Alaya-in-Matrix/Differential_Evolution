@@ -1,5 +1,4 @@
-#ifndef __DE_H__
-#define __DE_H__
+#pragma once
 #include <vector>
 #include <functional>
 #include <utility>
@@ -40,5 +39,3 @@ public:
             );
     std::vector<double> solver();
 };
-
-#endif

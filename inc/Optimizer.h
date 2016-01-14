@@ -1,5 +1,4 @@
-#ifndef __OPTIMIZER_H__
-#define __OPTIMIZER_H__
+#pragma once
 #include <string>
 #include <vector>
 #include <functional>
@@ -18,4 +17,3 @@ public:
     std::vector<double> run();
     ~Optimizer();
 };
-#endif
