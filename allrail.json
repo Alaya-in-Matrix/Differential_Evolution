@@ -57,7 +57,7 @@
             "type": "maximize"
         },
         "constraints": [
-            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 3},
+            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 4},
             { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 1}
         ]
     }

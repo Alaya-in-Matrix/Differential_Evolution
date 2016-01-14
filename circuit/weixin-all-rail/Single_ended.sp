@@ -18,7 +18,7 @@ vs      100         0       dc=0        ac=1
 
 vss         vss         0       0
 
-.ac   dec 100 1 1g sweep vin_cm 0 3.3 0.825
+.ac   dec 100 1 10g sweep vin_cm 0 3.3 0.825
 .meas ac  gain    find  vdb(vo_ac) at=1
 .meas ac  ugf_actual     when vdb(vo_ac)=0
 .meas ac  phase          min  vp(vo_ac) from=1 to=ugf_actual
