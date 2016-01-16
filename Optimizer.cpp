@@ -79,7 +79,7 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 
         double fom = numeric_limits<double>::infinity();
         const auto measured = simulation(idx, input);
-        auto meas_failed    = measured.find("failed");
+        const auto meas_failed    = measured.find("failed");
 
         static int iter_counter = 0;
         #pragma omp atomic
@@ -110,11 +110,11 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             double penalty = 0;
             for (auto c_pair : constraints)
             {
-                string c_name       = c_pair.first;
+                const string c_name       = c_pair.first;
                 double c_value      = c_pair.second;
                 const auto weight_p = constr_w.find(c_name);
                 assert(weight_p != constr_w.end());
-                double c_weight     = weight_p->second;
+                const double c_weight     = weight_p->second;
                 const auto m_pair = measured.find(c_name);
                 if (m_pair == measured.end())
                 {
@@ -124,20 +124,21 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 double m_value = m_pair->second;
                 m_value *= c_weight;
                 c_value *= c_weight;
-                double tmp_penalty = m_value <= c_value ? 0 : m_value - c_value;
+                const double tmp_penalty = m_value <= c_value ? 0 : m_value - c_value;
                 penalty += tmp_penalty;
-                assert(penalty >= 0);
             }
+            penalty = std::isnan(penalty) ? numeric_limits<double>::infinity() : penalty;
+            fom     = std::isnan(fom) ? numeric_limits<double>::infinity() : fom; 
             penalty *= penalty_weight;
             fom += penalty;
+            assert(penalty >= 0);
             printf("penalty = %g, fom: %g\n", penalty, fom);
             if (penalty == 0)
             {
-                string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
-                string out_path  = _opt_info.out_dir() + "/";
-                out_path       += "good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
-                string cmd       = "cp " + para_path + " " + out_path;
-                int ret = system(cmd.c_str());
+                const string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
+                const string out_path  = _opt_info.out_dir() + "/" + "good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
+                const string cmd       = "cp " + para_path + " " + out_path;
+                const int ret = system(cmd.c_str());
                 if (ret != 0)
                 {
                     cerr << "fail to execute: " << cmd << endl;
@@ -181,6 +182,7 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
             }
             else
             {
+                measured["failed"] = 0;
                 for (const string var_name : meas_var_names)
                 {
                     if (measured.find(var_name) != measured.end())
