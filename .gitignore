@@ -12,3 +12,12 @@ solver
 # perl script to parse run.log
 *.pl
 *.sh
+*.swp
+
+# cmake generated files
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
