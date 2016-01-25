@@ -212,82 +212,25 @@ Config::Config(const ptree& pt)
         exit(EXIT_FAILURE);
     }
 }
-vector<string> Config::get_para_names() const noexcept
-{
-    return _para_names;
-}
-vector<pair<double, double>> Config::get_para_ranges() const noexcept
-{
-    return _ranges;
-}
-unsigned int Config::iter_num() const noexcept
-{
-    return _iter_num;
-}
-unsigned int Config::para_num() const noexcept
-{
-    return _para_num;
-}
-unsigned int Config::population() const noexcept
-{
-    return _population;
-}
-unsigned int Config::thread_num() const noexcept
-{
-    return _thread_num;
-}
-string Config::prj_dir() const noexcept
-{
-    return _out_dir;
-}
-string Config::out_dir() const noexcept
-{
-    return _out_dir;
-}
-string Config::workspace() const noexcept
-{
-    return _workspace;
-}
-string Config::sim_tool() const noexcept
-{
-    return _sim_tool;
-}
-string Config::para_file() const noexcept
-{
-    return _para_file;
-}
-string Config::circuit_dir() const noexcept
-{
-    return _circuit_dir;
-}
-string Config::testbench() const noexcept
-{
-    return _testbench;
-}
-unordered_map<string, vector<string>> Config::measured_vars() const noexcept
-{
-    return _measured_vars;
-}
-double Config::penalty_weight() const noexcept
-{
-    return _penalty_weight;
-}
-string Config::fom_name() const noexcept
-{
-    return _fom_name;
-}
-int Config::fom_direction_weight() const noexcept
-{
-    return _fom_direction;
-}
-std::unordered_map<std::string, double> Config::constraints() const noexcept
-{
-    return _constraints;
-}
-std::unordered_map<std::string, double> Config::constraints_weight() const noexcept
-{
-    return _constr_weight;
-}
+vector<string> Config::get_para_names() const noexcept { return _para_names; }
+vector<pair<double, double>> Config::get_para_ranges() const noexcept { return _ranges; }
+unsigned int Config::iter_num() const noexcept { return _iter_num; }
+unsigned int Config::para_num() const noexcept { return _para_num; }
+unsigned int Config::population() const noexcept { return _population; }
+unsigned int Config::thread_num() const noexcept { return _thread_num; }
+string Config::prj_dir() const noexcept { return _out_dir; }
+string Config::out_dir() const noexcept { return _out_dir; }
+string Config::workspace() const noexcept { return _workspace; }
+string Config::sim_tool() const noexcept { return _sim_tool; }
+string Config::para_file() const noexcept { return _para_file; }
+string Config::circuit_dir() const noexcept { return _circuit_dir; }
+string Config::testbench() const noexcept { return _testbench; }
+unordered_map<string, vector<string>> Config::measured_vars() const noexcept { return _measured_vars; }
+double Config::penalty_weight() const noexcept { return _penalty_weight; }
+string Config::fom_name() const noexcept { return _fom_name; }
+int Config::fom_direction_weight() const noexcept { return _fom_direction; }
+std::unordered_map<std::string, double> Config::constraints() const noexcept { return _constraints; }
+std::unordered_map<std::string, double> Config::constraints_weight() const noexcept { return _constr_weight; }
 void Config::print() const noexcept
 {
     printf("iter num: %d\n", _iter_num);
@@ -317,16 +260,6 @@ void Config::print() const noexcept
         }
     }
     puts("==================================================================================");
-    // assert(_constraints.size() == _constr_directions.size());
-    // for(auto constr_pair : _constraints)
-    // {
-    //     const string name      = constr_pair.first;
-    //     const double value     = constr_pair.second;
-    //     auto c_direction = _constr_directions.find(name);
-    //     assert(c_direction != _constr_directions.end());
-    //     const string cmp_str   = c_direction->second == 1 ? "<" : ">";
-    //     printf("constraint %s %s %g\n", name.c_str(), cmp_str.c_str(), value);
-    // }
     printf("FOM: %s %s\n", _fom_direction == 1 ? "minimize" : "maximize", _fom_name.c_str());
 }
 double Config::process_measured(const string var_name, const vector<double>& data) const noexcept

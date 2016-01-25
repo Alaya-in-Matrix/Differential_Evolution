@@ -13,7 +13,6 @@ void gen_param(const vector<string>& names, const vector <double>& values, const
     assert(names.size() == values.size());
     ofstream ofile;
     ofile.open(path);
-    // assert(ofile.is_open());
     if(! ofile.is_open())
     {
         cerr << "File " << path << " can not be created" << endl;
