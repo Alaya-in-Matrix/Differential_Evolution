@@ -1,13 +1,9 @@
 *.swp
-obj/
-de
-de.exe
 param.sp
 de-spice
 bin/
 backup/
 .ycm_extra_conf.py*
-solver
 
 # perl script to parse run.log
 *.pl
