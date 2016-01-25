@@ -5,6 +5,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <string>
+#include <cmath>
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -272,13 +273,16 @@ double Config::process_measured(const string var_name, const vector<double>& dat
         exit(EXIT_FAILURE);
     }
     const string func_str = iter->second;
+    bool no_nan = data.end() == find_if(data.begin(), data.end(), [](double x) -> bool{
+            return x != x; // check whether a floating number is NaN
+    });
     if(func_str == "min")
     {
-        return *(min_element(data.begin(), data.end()));
+        return no_nan ? *(min_element(data.begin(), data.end())) : numeric_limits<double>::quiet_NaN();
     }
     else if(func_str == "max")
     {
-        return *(max_element(data.begin(), data.end()));
+        return no_nan ? *(max_element(data.begin(), data.end())) : numeric_limits<double>::quiet_NaN();
     }
     else if(func_str == "head")
     {
