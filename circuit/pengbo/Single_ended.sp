@@ -50,7 +50,7 @@ e_cmrr+ vin_cmrr+ vcm_cmrr 100cmrr 0 0.5
 e_cmrr- vin_cmrr- vo_cmrr 100cmrr 0 0.5
 vcm_cmrr vcm_cmrr 0 dc=vin_cm
 vs_cmrr 100cmrr 0 dc=0 ac=1
-vdd_cmrr vcc_cmrr 0 vdd_v
+vdd_cmrr vdd_cmrr 0 vdd_v
 
 vss vss 0 0
 
