@@ -7,7 +7,7 @@ endif()
 message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
-set(EXE solver)
+set(EXE de-solver)
 set(DE_LIB de)
 include_directories(inc)
 add_executable(${EXE} 
@@ -17,14 +17,13 @@ add_executable(${EXE}
     src/Evolution.cpp
     src/main.cpp)
 add_library(${DE_LIB} SHARED 
-    ./src/Evolution.cpp
-    ./inc/Evolution.h)
-
+    src/Evolution.cpp
+    inc/Evolution.h)
 
 find_package(Boost 1.57 REQUIRED)
 if(Boost_FOUND)
 else(Boost_FOUND)
-    message(FATAL_ERROR "boost not found")
+    message(FATAL_ERROR "Boost not found")
 endif(Boost_FOUND)
 
 if(CMAKE_INSTALL_PREFIX)
@@ -34,5 +33,8 @@ if(CMAKE_INSTALL_PREFIX)
         LIBRARY DESTINATION lib)
     install(FILES inc/Evolution.h
         DESTINATION inc
+        PERMISSIONS OWNER_READ GROUP_READ)
+    install(FILES README.md
+        DESTINATION doc
         PERMISSIONS OWNER_READ GROUP_READ)
 endif()
