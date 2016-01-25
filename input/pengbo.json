@@ -1,9 +1,10 @@
 {
+    "prj_dir":"/home/alaya/gitrepos/de-hspice", 
     "iter_num": 100, 
     "init_num": 250, 
     "out_dir": "out/pengbo",
     "workspace": "workspace/pengbo",
-    "thread_num":16, 
+    "thread_num":1, 
     "parameter": [
         { "name": "ib"   , "lb":1.7     , "ub":2.2}, 
         { "name": "wa2"  , "lb":5e0     , "ub":8e0}, 
@@ -32,7 +33,7 @@
     ],
     "simulation": {
         "para_file": "param.sp",
-        "circuit_dir": "circuit/pengbo-json",
+        "circuit_dir": "circuit/pengbo",
         "testbench": "Single_ended.sp", 
         "sim_tool": "hspicerf64"
     },

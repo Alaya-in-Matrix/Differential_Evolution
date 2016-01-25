@@ -53,16 +53,17 @@ void Config::set_opt_settings() noexcept
     _iter_num   = _info_tree.get("iter_num", 600);
     _para_num   = _para_names.size();
     _population = _info_tree.get("init_num", 10 * _para_num);
-    _out_dir    = _info_tree.get("out_dir", "out");
-    _workspace  = _info_tree.get("workspace", "workspace");
     _thread_num = _info_tree.get("thread_num", 1);
+    _prj_dir    = _info_tree.get("prj_dir", ".") + "/";
+    _out_dir    = _prj_dir + _info_tree.get("out_dir", "out");
+    _workspace  = _prj_dir + _info_tree.get("workspace", "workspace");
 }
 void Config::set_sim_info()
 {
     try
     {
         _para_file   = _info_tree.get<string>("simulation.para_file");
-        _circuit_dir = _info_tree.get<string>("simulation.circuit_dir");
+        _circuit_dir = _prj_dir + _info_tree.get<string>("simulation.circuit_dir");
         _testbench   = _info_tree.get<string>("simulation.testbench");
         _sim_tool    = _info_tree.get<string>("simulation.sim_tool");
         if (_supported_sim_tool.end() == find(_supported_sim_tool.begin(), _supported_sim_tool.end(), _sim_tool))
@@ -234,6 +235,10 @@ unsigned int Config::population() const noexcept
 unsigned int Config::thread_num() const noexcept
 {
     return _thread_num;
+}
+string Config::prj_dir() const noexcept
+{
+    return _out_dir;
 }
 string Config::out_dir() const noexcept
 {

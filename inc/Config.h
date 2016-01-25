@@ -22,6 +22,7 @@ class Config
     unsigned int _para_num;
     unsigned int _population;
     unsigned int _thread_num;
+    std::string  _prj_dir;
     std::string  _out_dir;
     std::string  _workspace;
 
@@ -62,6 +63,7 @@ public:
     unsigned int para_num() const noexcept;
     unsigned int population() const noexcept;
     unsigned int thread_num() const noexcept;
+    std::string prj_dir() const noexcept;
     std::string out_dir() const noexcept;
     std::string workspace() const noexcept;
     std::string para_file() const noexcept;
