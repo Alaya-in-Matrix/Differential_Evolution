@@ -87,14 +87,6 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
 
         if (meas_failed == measured.end() || meas_failed->second == 0)
         {
-            printf("Iter: %d, Population Idx: %d, ", iter_counter, idx);
-            for (auto p : measured)
-            {
-                if (p.first != "failed")
-                {
-                    printf("%s = %.2f, ", p.first.c_str(), p.second);
-                }
-            }
             const string fom_name   = _opt_info.fom_name();
             const double fom_weight = _opt_info.fom_direction_weight();
             if (measured.find(fom_name) == measured.end())
@@ -128,11 +120,22 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 penalty += tmp_penalty;
             }
             penalty = std::isnan(penalty) ? numeric_limits<double>::infinity() : penalty;
-            fom     = std::isnan(fom) ? numeric_limits<double>::infinity() : fom; 
+            fom     = std::isnan(fom) ? numeric_limits<double>::infinity() : fom;
             penalty *= penalty_weight;
             fom += penalty;
             assert(penalty >= 0);
-            printf("penalty = %g, fom: %g\n", penalty, fom);
+            #pragma omp critical
+            {
+                printf("Iter: %d, Population Idx: %d, ", iter_counter, idx);
+                for (auto p : measured)
+                {
+                    if (p.first != "failed")
+                    {
+                        printf("%s = %.2f, ", p.first.c_str(), p.second);
+                    }
+                }
+                printf("penalty = %g, fom: %g\n", penalty, fom);
+            }
             if (penalty == 0)
             {
                 const string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
@@ -147,7 +150,10 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
         }
         else
         {
-            printf("Iter: %d, Population Idx: %d, failed\n", iter_counter, idx);
+            #pragma omp critical
+            {
+                printf("Iter: %d, Population Idx: %d, failed\n", iter_counter, idx);
+            }
         }
         fflush(stdout);
         return fom;
