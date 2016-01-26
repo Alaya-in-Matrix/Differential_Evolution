@@ -1,0 +1,66 @@
+{
+    "iter_num": 600, 
+    "init_num": 330, 
+    "out_dir": "out/effw",
+    "workspace": "workspace/effw",
+    "thread_num":3, 
+    "parameter": [
+        { "name": "cm", "lb": 0.5, "ub": 1 }
+        , { "name": "ival", "lb": 0.5, "ub": 1 }
+        , { "name": "l_fixed", "lb": 0.35, "ub": 2 }
+        , { "name": "weff1_2", "lb": 0.4, "ub": 30 }
+        , { "name": "weff3_4", "lb": 0.4, "ub": 30 }
+        , { "name": "weff5", "lb": 0.4, "ub": 30 }
+        , { "name": "weff6", "lb": 0.4, "ub": 30 }
+        , { "name": "weff7", "lb": 0.4, "ub": 30 }
+        , { "name": "weff8", "lb": 0.4, "ub": 30 }
+        , { "name": "weff9", "lb": 0.4, "ub": 30 }
+        , { "name": "weff10", "lb": 0.4, "ub": 30 }
+        , { "name": "weff11", "lb": 0.4, "ub": 30 }
+        , { "name": "weff12", "lb": 0.4, "ub": 30 }
+        , { "name": "weff13", "lb": 0.4, "ub": 30 }
+        , { "name": "weff14", "lb": 0.4, "ub": 30 }
+        , { "name": "weff15", "lb": 0.4, "ub": 30 }
+        , { "name": "weff16_18", "lb": 0.4, "ub": 30 }
+        , { "name": "weff17_19", "lb": 0.4, "ub": 30 }
+        , { "name": "weff20", "lb": 0.4, "ub": 30 }
+        , { "name": "weff21", "lb": 0.4, "ub": 30 }
+        , { "name": "weff22_23", "lb": 0.4, "ub": 30 }
+        , { "name": "weff24", "lb": 0.4, "ub": 30 }
+        , { "name": "weff25", "lb": 0.4, "ub": 30 }
+        , { "name": "weff26", "lb": 0.4, "ub": 30 }
+        , { "name": "weff27", "lb": 0.4, "ub": 30 }
+        , { "name": "weff28", "lb": 0.4, "ub": 30 }
+        , { "name": "weff29", "lb": 0.4, "ub": 30 }
+        , { "name": "weff30", "lb": 0.4, "ub": 30 }
+        , { "name": "weff31", "lb": 0.4, "ub": 30 }
+        , { "name": "weff32", "lb": 0.4, "ub": 30 }
+        , { "name": "weff33", "lb": 0.4, "ub": 30 }
+        , { "name": "weff34", "lb": 0.4, "ub": 30 }
+        , { "name": "weff35", "lb": 0.4, "ub": 30 }
+    ],
+    "simulation": {
+        "para_file": "param.sp",
+        "circuit_dir": "circuit/eff-w-weixin", 
+        "testbench": "Single_ended.sp", 
+        "sim_tool": "hspice64"
+    },
+    "measured": [
+        {"name" : "gain", "file" : "Single_ended.ma0", "func" : "min"} 
+        , {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min"} 
+        , {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min"} 
+        , {"name" : "power",   "file" : "Single_ended.ma0", "func" : "max"}
+    ], 
+    "spec": {
+        "penalty_weight": 8,
+        "fom": {
+            "name": "gain",
+            "type": "maximize"
+        },
+        "constraints": [
+            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 1},
+            { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 1}, 
+            { "name": "power",  "type": "minimize", "value": 6.6 , "weight" : 10}
+        ]
+    }
+}
