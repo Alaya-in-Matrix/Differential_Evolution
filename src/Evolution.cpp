@@ -72,7 +72,9 @@ vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcep
             double tmp = x_best[j] + f * (x_r1[j] - x_r2[j]);
             double lb  = _ranges[j].first;
             double ub  = _ranges[j].second;
-            v[i][j] = lb <= tmp && tmp <= ub ? tmp : (tmp < lb ? lb : ub);
+            // Random reinitiate
+            // perhaps I need to set the distr as a member of DESolver ?
+            v[i][j] = lb <= tmp && tmp <= ub ? tmp : uniform_real_distribution<double>(lb, ub)(_engine);
         }
     }
     return v;
