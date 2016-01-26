@@ -41,7 +41,7 @@
     ],
     "simulation": {
         "para_file": "param.sp",
-        "circuit_dir": "circuit/weixin-all-rail",
+        "circuit_dir": "circuit/allrail-weixin",
         "testbench": "Single_ended.sp", 
         "sim_tool": "hspice64"
     },
