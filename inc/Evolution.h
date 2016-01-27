@@ -25,7 +25,7 @@ protected:
     Vec2D _candidates;
     // fom and constraint violation
     std::vector<std::pair<double, double>> _results;
-    bool _less_eq(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
+    bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
     size_t _find_best(const Vec2D&) const noexcept;
     Vec2D _mutation(const Vec2D&) const noexcept;
     Vec2D _crossover(const Vec2D&, const Vec2D&) const noexcept;

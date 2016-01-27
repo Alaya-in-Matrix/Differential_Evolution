@@ -113,26 +113,50 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
         assert(u[i].size() == _para_num);
 
         pair<double, double> u_evaled = _func(i, u[i]);
-        if (_less_eq(u_evaled, _results[i]))
+        if (_better(u_evaled, _results[i]))
         {
             _candidates[i] = u[i];
             _results[i]    = u_evaled;
         }
     }
 }
-bool DESolver::_less_eq(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
+bool DESolver::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    return p1.first + p1.second <= p2.first + p2.second;
+    if(p1.second == 0 && p2.second == 0)
+    {
+        return p1.first <= p1.first;
+    }
+    else if(p1.second <= 0 && p2.second > 0)
+    {
+        return true;
+    }
+    else if(p1.second > 0 && p2.second <= 0)
+    {
+        return false;
+    }
+    else 
+    {
+        return p1.second <= p2.second;
+    }
+    // return p1.first + p1.second <= p2.first + p2.second;
 }
 size_t DESolver::_find_best(const Vec2D& solutions) const noexcept
 {
-    size_t best_idx = distance(_results.begin(), min_element(_results.begin(), _results.end(), [&](const pair<double, double>& p1, const pair<double, double>& p2)->bool
+    // size_t best_idx = distance(_results.begin(), min_element(_results.begin(), _results.end(), [&](const pair<double, double>& p1, const pair<double, double>& p2)->bool
+    // {
+    //     return _better(p1, p2);
+    // }));
+    size_t best_idx  = 0;
+    auto best_result = _results[0];
+    for(size_t i = 0; i < _results.size(); ++i)
     {
-        return _less_eq(p1, p2);
-    }));
-    double best_fom    = _results[best_idx].first;
-    double best_c_viol = _results[best_idx].second;
-    printf("Current Best: idx = %ld, fom = %g, _constraint_violation = %g, fom + c_violation = %g\n", best_idx, best_fom, best_c_viol, best_fom + best_c_viol);
+        if(_better(_results[i], best_result))
+        {
+            best_idx    = i;
+            best_result = _results[i];
+        }
+    }
+    printf("Current Best: idx = %ld, fom = %g, _constraint_violation = %g, fom + c_violation = %g\n", best_idx, best_result.first, best_result.second, best_result.first + best_result.second);
     fflush(stdout);
     return best_idx;
 }
