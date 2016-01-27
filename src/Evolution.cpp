@@ -122,23 +122,26 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 }
 bool DESolver::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    if(p1.second == 0 && p2.second == 0)
-    {
-        return p1.first <= p1.first;
-    }
-    else if(p1.second <= 0 && p2.second > 0)
-    {
-        return true;
-    }
-    else if(p1.second > 0 && p2.second <= 0)
-    {
-        return false;
-    }
-    else 
-    {
-        return p1.second <= p2.second;
-    }
-    // return p1.first + p1.second <= p2.first + p2.second;
+    // // Feasibility Rules
+    // if(p1.second == 0 && p2.second == 0)
+    // {
+    //     return p1.first <= p1.first;
+    // }
+    // else if(p1.second <= 0 && p2.second > 0)
+    // {
+    //     return true;
+    // }
+    // else if(p1.second > 0 && p2.second <= 0)
+    // {
+    //     return false;
+    // }
+    // else 
+    // {
+    //     return p1.second <= p2.second;
+    // }
+
+    // static penalty
+    return p1.first + p1.second <= p2.first + p2.second;
 }
 size_t DESolver::_find_best(const Vec2D& solutions) const noexcept
 {

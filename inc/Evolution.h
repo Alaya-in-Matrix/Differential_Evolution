@@ -5,6 +5,11 @@
 #include <random>
 class DESolver
 {
+    // Default DE solver
+    // DE/best/1
+    // F is a random number following normal distribution
+    // Static Function inequality constraint handling
+    // Random Reintialize boundary constraint handling
     // maybe I shouldn't use 2d vector, I should use 2D array?
 protected:
     typedef std::vector<std::vector<double> > Vec2D;
