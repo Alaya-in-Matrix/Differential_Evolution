@@ -5,6 +5,7 @@
 #include <utility>
 #include <random>
 #include <cassert>
+#include <cmath>
 #include <numeric>
 #include <limits>
 #include <omp.h>
@@ -194,4 +195,75 @@ vector<double> DESolver::solver()
     }
     size_t best_idx = _find_best(_candidates);
     return _candidates[best_idx];
+}
+vector<double> EpsilonDE_Best_1::solver()
+{
+    _candidates.clear();
+    _candidates.reserve(_init_num);
+    const double inf = numeric_limits<double>::infinity();
+    _results = vector<pair<double, double>>(_init_num, make_pair(inf, inf));
+    for (unsigned int i = 0; i < _init_num; ++i)
+    {
+        _candidates.push_back(vector<double>(_para_num));
+        for (unsigned int j = 0; j < _para_num; ++j)
+        {
+            double lb = _ranges[j].first;
+            double ub = _ranges[j].second;
+            uniform_real_distribution<double> distr(lb, ub);
+            _candidates[i][j] = distr(_engine);
+        }
+    }
+    #pragma omp parallel for schedule(dynamic, 2)
+    for (unsigned int i = 0; i < _init_num; ++i)
+    {
+        _results[i] = _func(i, _candidates[i]);
+    }
+    init_epsilon();
+
+    for (unsigned int i = 0; i < _iter_num; ++i)
+    {
+        auto v      = _mutation(_candidates); // 会做返回值优化吧
+        auto u      = _crossover(_candidates, v);
+        _selection(_candidates, u);
+        update_epsilon();
+        ++curr_gen;
+    }
+    size_t best_idx = _find_best(_candidates);
+    return _candidates[best_idx];
+}
+void EpsilonDE_Best_1::init_epsilon() 
+{
+    assert(_results.size() == _iter_num);
+    vector<double> c_violation;
+    for(auto rp : _results)
+        c_violation.push_back(rp.second);
+    sort(c_violation.begin(), c_violation.end());
+    size_t idx = (size_t)floor(theta * c_violation.size());
+    while(std::isinf(c_violation[idx]) && idx > 0) 
+        --idx;
+    epsilon_0     = c_violation.at(idx);
+    epsilon_level = epsilon_0;
+}
+
+void EpsilonDE_Best_1::update_epsilon() 
+{
+    if(curr_gen > tc)
+        epsilon_level = 0;
+    else
+        epsilon_level = epsilon_0 * pow(1 - (double)curr_gen / (double)tc, cp);
+}
+bool EpsilonDE_Best_1::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
+{
+    if(p1.second <= epsilon_level && p2.second <= epsilon_level)
+    {
+        return p1.first <= p2.first;
+    }
+    else if(p1.second == p2.second)
+    {
+        return p1.first <= p2.first;
+    }
+    else
+    {
+        return p1.second <= p2.second;
+    }
 }
