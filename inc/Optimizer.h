@@ -1,15 +1,16 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <functional>
+#include <utility>
 #include <unordered_map>
+#include <functional>
 #include "Evolution.h"
 #include "Config.h"
 class Optimizer
 {
     const Config _opt_info;
     DESolver* _de_solver;
-    std::function<double(unsigned int, const std::vector<double>&)> gen_opt_func() const;
+    std::function<std::pair<double, double>(unsigned int, const std::vector<double>&)> gen_opt_func() const;
     std::unordered_map<std::string, double> simulation(unsigned int, const std::vector<double>&) const;
 public:
     Optimizer(const Config&);

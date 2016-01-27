@@ -2,13 +2,13 @@
 #include <iostream>
 #include <omp.h>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <cassert>
-#include <omp.h>
 #include <limits>
 #include <exception>
 #include <system_error>
 #include <functional>
-#include <unordered_map>
 #include <boost/algorithm/string.hpp>
 #include "hspice_util.h"
 #include "Evolution.h"
@@ -72,12 +72,13 @@ vector<double> Optimizer::run()
     vector<double> solution = _de_solver->solver();
     return solution;
 }
-function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() const
+function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() const
 {
-    return [&](unsigned int idx,  const vector<double>& input) -> double
+    return [&](unsigned int idx,  const vector<double>& input) -> pair<double, double>
     {
 
-        double fom = numeric_limits<double>::infinity();
+        double fom         = numeric_limits<double>::infinity();
+        double c_violation = numeric_limits<double>::infinity();
         const auto measured = simulation(idx, input);
         const auto meas_failed    = measured.find("failed");
 
@@ -94,7 +95,8 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                 cerr << "fom " + fom_name + " is not measured" << endl;
                 exit(EXIT_FAILURE);
             }
-            fom = measured.find(fom_name)->second * fom_weight;
+            fom         = measured.find(fom_name)->second * fom_weight;
+            c_violation = 0;
             const auto constraints      = _opt_info.constraints();
             const auto constr_w         = _opt_info.constraints_weight();
             const double penalty_weight = _opt_info.penalty_weight();
@@ -122,8 +124,8 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             penalty = std::isnan(penalty) ? numeric_limits<double>::infinity() : penalty;
             fom     = std::isnan(fom) ? numeric_limits<double>::infinity() : fom;
             penalty *= penalty_weight;
-            fom += penalty;
-            assert(penalty >= 0);
+            c_violation += penalty;
+            assert(c_violation >= 0);
             #pragma omp critical
             {
                 printf("Iter: %d, Population Idx: %d, ", iter_counter, idx);
@@ -134,7 +136,7 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
                         printf("%s = %.2f, ", p.first.c_str(), p.second);
                     }
                 }
-                printf("penalty = %g, fom: %g\n", penalty, fom);
+                printf("constraint violation = %g, fom: %g\n", c_violation, fom);
             }
             if (penalty == 0)
             {
@@ -156,7 +158,7 @@ function<double(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() 
             }
         }
         fflush(stdout);
-        return fom;
+        return make_pair(fom, c_violation);
     };
 }
 unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const vector<double>& params) const

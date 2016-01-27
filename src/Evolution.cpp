@@ -13,12 +13,12 @@
 #include "util.h"
 using namespace std;
 mt19937_64 _engine(random_device{}());
-DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
+DESolver::DESolver( function <pair<double, double>(unsigned int idx, const vector<double>&)> f
                     , RangeVec rg
                     , unsigned int iter_num
                     , unsigned int para_num
                     , unsigned int init_num
-                    , double cr 
+                    , double cr
                     , double fmu
                     , double fsigma
                   )
@@ -51,8 +51,7 @@ DESolver::DESolver( function <double(unsigned int idx, const vector<double>&)> f
 // 为何返回值类型不可以用"Vec2D"，参数类型却可以？
 vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcept
 {
-    pair<int, double> best = _find_best(solutions);
-    size_t best_idx        = best.first;
+    size_t best_idx = _find_best(solutions);
     uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1); // 其实 solutions.size() == _init_num?
     normal_distribution<double> f_distr(_fmu, _fsigma);
     const auto& x_best = solutions[best_idx];
@@ -113,25 +112,36 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
         assert(x[i].size() == _para_num);
         assert(u[i].size() == _para_num);
 
-        double result_x = _results[i];
-        double result_u = _func(i, u[i]);
-        _candidates[i]  = result_u <= result_x ? u[i] : x[i];
-        _results[i]     = result_u <= result_x ? result_u : result_x;
+        pair<double, double> u_evaled = _func(i, u[i]);
+        if (_less_eq(u_evaled, _results[i]))
+        {
+            _candidates[i] = u[i];
+            _results[i]    = u_evaled;
+        }
     }
 }
-pair<int, double> DESolver::_find_best(const Vec2D& solutions) const noexcept
+bool DESolver::_less_eq(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    size_t best_idx    = distance(_results.begin(), min_element(_results.begin(), _results.end()));
-    double best_result = _results[best_idx];
-    printf("Current Best: (%zu, %g)\n", best_idx, best_result);
+    return p1.first + p1.second <= p2.first + p2.second;
+}
+size_t DESolver::_find_best(const Vec2D& solutions) const noexcept
+{
+    size_t best_idx = distance(_results.begin(), min_element(_results.begin(), _results.end(), [&](const pair<double, double>& p1, const pair<double, double>& p2)->bool
+    {
+        return _less_eq(p1, p2);
+    }));
+    double best_fom    = _results[best_idx].first;
+    double best_c_viol = _results[best_idx].second;
+    printf("Current Best: idx = %ld, fom = %g, _constraint_violation = %g, fom + c_violation = %g\n", best_idx, best_fom, best_c_viol, best_fom + best_c_viol);
     fflush(stdout);
-    return make_pair(best_idx, best_result);
+    return best_idx;
 }
 vector<double> DESolver::solver()
 {
     _candidates.clear();
     _candidates.reserve(_init_num);
-    _results = vector<double>(_init_num);
+    const double inf = numeric_limits<double>::infinity();
+    _results = vector<pair<double, double>>(_init_num, make_pair(inf, inf));
     for (unsigned int i = 0; i < _init_num; ++i)
     {
         _candidates.push_back(vector<double>(_para_num));
@@ -146,7 +156,7 @@ vector<double> DESolver::solver()
     #pragma omp parallel for schedule(dynamic, 2)
     for (unsigned int i = 0; i < _init_num; ++i)
     {
-        _results[i] = (_func(i, _candidates[i]));
+        _results[i] = _func(i, _candidates[i]);
     }
 
     for (unsigned int i = 0; i < _iter_num; ++i)
@@ -155,6 +165,6 @@ vector<double> DESolver::solver()
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
     }
-    pair<int, double> best_pair   = _find_best(_candidates);
-    return _candidates[best_pair.first];
+    size_t best_idx = _find_best(_candidates);
+    return _candidates[best_idx];
 }
