@@ -9,6 +9,7 @@
 #include <exception>
 #include <system_error>
 #include <functional>
+#include <memory>
 #include <boost/algorithm/string.hpp>
 #include "hspice_util.h"
 #include "Evolution.h"
@@ -74,7 +75,8 @@ vector<double> Optimizer::run()
 }
 function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::gen_opt_func() const
 {
-    return [&](unsigned int idx,  const vector<double>& input) -> pair<double, double>
+    shared_ptr<int> iter_counter = make_shared<int>(0);
+    return [&, iter_counter](unsigned int idx,  const vector<double>& input) -> pair<double, double>
     {
 
         double fom         = numeric_limits<double>::infinity();
@@ -82,9 +84,8 @@ function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::g
         const auto measured = simulation(idx, input);
         const auto meas_failed    = measured.find("failed");
 
-        static int iter_counter = 0;
         #pragma omp atomic
-        iter_counter = iter_counter + 1;
+        *iter_counter = *iter_counter + 1;
 
         if (meas_failed == measured.end() || meas_failed->second == 0)
         {
@@ -128,7 +129,7 @@ function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::g
             assert(c_violation >= 0);
             #pragma omp critical
             {
-                printf("Iter: %d, Population Idx: %d, ", iter_counter, idx);
+                printf("Iter: %d, Population Idx: %d, ", *iter_counter, idx);
                 for (auto p : measured)
                 {
                     if (p.first != "failed")
@@ -141,7 +142,7 @@ function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::g
             if (penalty == 0)
             {
                 const string para_path = _opt_info.workspace() + "/" + to_string(idx) + "/" + _opt_info.para_file();
-                const string out_path  = _opt_info.out_dir() + "/" + "good_" + to_string(iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
+                const string out_path  = _opt_info.out_dir() + "/" + "good_" + to_string(*iter_counter) + "_" + to_string(idx) + "_" + to_string(fom);
                 const string cmd       = "cp " + para_path + " " + out_path;
                 const int ret = system(cmd.c_str());
                 if (ret != 0)
@@ -154,7 +155,7 @@ function<pair<double, double>(unsigned int, const vector<double>&)> Optimizer::g
         {
             #pragma omp critical
             {
-                printf("Iter: %d, Population Idx: %d, failed\n", iter_counter, idx);
+                printf("Iter: %d, Population Idx: %d, failed\n", *iter_counter, idx);
             }
         }
         fflush(stdout);
