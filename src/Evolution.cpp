@@ -241,7 +241,7 @@ void EpsilonDE_Best_1::init_epsilon()
         c_violation.push_back(rp.second);
     sort(c_violation.begin(), c_violation.end());
     // At least on non-fail point should be sampled
-    if(c_violation[0])
+    if(std::isinf(c_violation[0]))
     {
         cerr << "All initial sampling faile(constraint violation is infinity)" << endl;
         cerr << "You may need to check your objective function or run this program again" << endl;
