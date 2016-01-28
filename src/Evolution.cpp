@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 #include <vector>
 #include <functional>
@@ -126,7 +127,7 @@ bool DESolver::_better(const pair<double, double>& p1, const pair<double, double
     // // Feasibility Rules
     // if(p1.second == 0 && p2.second == 0)
     // {
-    //     return p1.first <= p1.first;
+    //     return p1.first <= p2.first;
     // }
     // else if(p1.second <= 0 && p2.second > 0)
     // {
@@ -222,6 +223,7 @@ vector<double> EpsilonDE_Best_1::solver()
 
     for (unsigned int i = 0; i < _iter_num; ++i)
     {
+        printf("Epsilon: %g, ", epsilon_level);
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
@@ -233,14 +235,26 @@ vector<double> EpsilonDE_Best_1::solver()
 }
 void EpsilonDE_Best_1::init_epsilon() 
 {
-    assert(_results.size() == _iter_num);
+    assert(_results.size() == _init_num);
     vector<double> c_violation;
     for(auto rp : _results)
         c_violation.push_back(rp.second);
     sort(c_violation.begin(), c_violation.end());
+    // At least on non-fail point should be sampled
+    if(c_violation[0])
+    {
+        cerr << "All initial sampling faile(constraint violation is infinity)" << endl;
+        cerr << "You may need to check your objective function or run this program again" << endl;
+        exit(EXIT_FAILURE);
+    }
     size_t idx = (size_t)floor(theta * c_violation.size());
-    while(std::isinf(c_violation[idx]) && idx > 0) 
-        --idx;
+    if(std::isinf(c_violation[idx]) && idx > 0)
+    {
+        size_t tmp_idx = idx;
+        while(std::isinf(c_violation[tmp_idx]) && tmp_idx > 0) 
+            --tmp_idx;
+        idx = (0 + tmp_idx) / 2; // use median
+    }
     epsilon_0     = c_violation.at(idx);
     epsilon_level = epsilon_0;
 }
@@ -254,11 +268,7 @@ void EpsilonDE_Best_1::update_epsilon()
 }
 bool EpsilonDE_Best_1::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    if(p1.second <= epsilon_level && p2.second <= epsilon_level)
-    {
-        return p1.first <= p2.first;
-    }
-    else if(p1.second == p2.second)
+    if((p1.second <= epsilon_level && p2.second <= epsilon_level) || p1.second == p2.second)
     {
         return p1.first <= p2.first;
     }

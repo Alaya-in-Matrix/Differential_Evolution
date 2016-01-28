@@ -30,11 +30,11 @@ protected:
     Vec2D _candidates;
     // fom and constraint violation
     std::vector<std::pair<double, double>> _results;
-    bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
-    virtual size_t _find_best(const Vec2D&) const noexcept;
-    Vec2D _mutation(const Vec2D&) const noexcept;
-    Vec2D _crossover(const Vec2D&, const Vec2D&) const noexcept;
-    void _selection(const Vec2D&, const Vec2D&) noexcept;
+    virtual bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
+    size_t _find_best(const Vec2D&) const noexcept;
+    virtual Vec2D _mutation(const Vec2D&) const noexcept;
+    virtual Vec2D _crossover(const Vec2D&, const Vec2D&) const noexcept;
+    virtual void _selection(const Vec2D&, const Vec2D&) noexcept;
 
 public:
     DESolver( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f

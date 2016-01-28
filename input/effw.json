@@ -1,6 +1,6 @@
 {
     "iter_num": 600, 
-    "init_num": 330, 
+    "init_num": 200, 
     "out_dir": "out/effw",
     "workspace": "workspace/effw",
     "thread_num":4, 
@@ -52,15 +52,15 @@
         , {"name" : "power",   "file" : "Single_ended.ma0", "func" : "max"}
     ], 
     "spec": {
-        "penalty_weight": 8,
+        "penalty_weight": 1,
         "fom": {
             "name": "gain",
             "type": "maximize"
         },
         "constraints": [
-            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 1}
-            , { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 1} 
-            , { "name": "power",  "type": "minimize", "value": 6.6 , "weight" : 30} 
+            { "name": "ugf", "type": "maximize", "value": 200 , "weight" : 0.6}
+            , { "name": "pm",  "type": "maximize", "value": 60 , "weight" : 2} 
+            , { "name": "power",  "type": "minimize", "value": 6.6 , "weight" : 18} 
         ]
     }
 }
