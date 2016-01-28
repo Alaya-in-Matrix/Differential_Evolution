@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include <functional>
 #include <utility>
@@ -37,6 +38,7 @@ protected:
     virtual void _selection(const Vec2D&, const Vec2D&) noexcept;
 
 public:
+    virtual ~DESolver() {}
     DESolver( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f
               , RangeVec rg
               , unsigned int iter_num
@@ -47,6 +49,14 @@ public:
               , double fsigma = 0.25
             );
     virtual std::vector<double> solver();
+};
+class FeasibilityRule_Best_1 : public DESolver
+{
+protected:
+    bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
+public:
+    ~FeasibilityRule_Best_1(){}
+    using DESolver::DESolver;
 };
 class EpsilonDE_Best_1 : public DESolver
 {
@@ -60,6 +70,7 @@ protected:
     void update_epsilon();
     bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
 public:
+    ~EpsilonDE_Best_1() {}
     EpsilonDE_Best_1( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f
                       , RangeVec rg
                       , unsigned int iter_num
@@ -80,4 +91,3 @@ public:
     {}
     std::vector<double> solver();
 };
-

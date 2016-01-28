@@ -68,7 +68,7 @@ vector<double> Optimizer::run()
     const unsigned int iter_num = _opt_info.iter_num();
     const unsigned int para_num = _opt_info.para_num();
     const unsigned int init_num = _opt_info.population();
-    _de_solver = new EpsilonDE_Best_1(opt_func, ranges, iter_num, para_num, init_num);
+    _de_solver = new FeasibilityRule_Best_1(opt_func, ranges, iter_num, para_num, init_num);
     vector<double> solution = _de_solver->solver();
     return solution;
 }

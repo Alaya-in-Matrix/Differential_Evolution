@@ -277,3 +277,24 @@ bool EpsilonDE_Best_1::_better(const pair<double, double>& p1, const pair<double
         return p1.second <= p2.second;
     }
 }
+bool FeasibilityRule_Best_1::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
+{
+    // Feasibility Rules
+    // Advantage: no additional parameters added, avoid manually setting penalty factor
+    if(p1.second == 0 && p2.second == 0)        // if both solutions are feasible, compare objective function
+    {
+        return p1.first <= p2.first;
+    }
+    else if(p1.second <= 0 && p2.second > 0)    // feasible solution is superior to infeasible solution
+    {
+        return true;
+    }
+    else if(p1.second > 0 && p2.second <= 0)
+    {
+        return false;
+    }
+    else                                        // if both solutions are infeasible, compare constraint violation 
+    {
+        return p1.second <= p2.second;
+    }
+}
