@@ -106,7 +106,7 @@ vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcep
 {
     assert(solutions.size() == _init_num);
     pair<size_t, vector<double>> base_p = _mutation_base(solutions);
-    uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1); 
+    uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1);
     normal_distribution<double> f_distr(_fmu, _fsigma);
 
     size_t base_idx         = base_p.first;
@@ -183,23 +183,18 @@ bool DESolver::_better(const pair<double, double>& p1, const pair<double, double
 }
 size_t DESolver::_find_best(const Vec2D& solutions) const noexcept
 {
-    // size_t best_idx = distance(_results.begin(), min_element(_results.begin(), _results.end(), [&](const pair<double, double>& p1, const pair<double, double>& p2)->bool
-    // {
-    //     return _better(p1, p2);
-    // }));
-    size_t best_idx  = 0;
-    auto best_result = _results[0];
-    for (size_t i = 0; i < _results.size(); ++i)
+    auto min_iter = min_element(_results.begin(), _results.end(), [&](const pair<double, double>& p1, const pair<double, double>& p2) -> bool
     {
-        if (_better(_results[i], best_result))
-        {
-            best_idx    = i;
-            best_result = _results[i];
-        }
-    }
-    printf("Current Best: idx = %ld, fom = %g, _constraint_violation = %g, fom + c_violation = %g\n", best_idx, best_result.first, best_result.second, best_result.first + best_result.second);
-    fflush(stdout);
-    return best_idx;
+        return _better(p1, p2);
+    });
+    assert(min_iter != _results.end());
+    return distance(_results.begin(), min_iter);
+}
+void DESolver::_report_best() const noexcept
+{
+    size_t best_idx = _find_best(_candidates);
+    const auto& best = _results[best_idx];
+    printf("Current Best idx: %ld, Fom: %g, Constraint Violation: %g\n", best_idx, best.first, best.second);
 }
 vector<double> DESolver::solver()
 {
@@ -224,14 +219,22 @@ vector<double> DESolver::solver()
         _results[i] = _func(i, _candidates[i]);
     }
 
+    _report_best();
     for (unsigned int i = 0; i < _iter_num; ++i)
     {
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
+        _report_best();
     }
     size_t best_idx = _find_best(_candidates);
     return _candidates[best_idx];
+}
+void EpsilonDE::_report_best() const noexcept
+{
+    size_t best_idx = _find_best(_candidates);
+    const auto& best = _results[best_idx];
+    printf("Epsilon: %g, Current Best idx: %ld, Fom: %g, Constraint Violation: %g\n", epsilon_level, best_idx, best.first, best.second);
 }
 vector<double> EpsilonDE::solver()
 {
@@ -256,13 +259,14 @@ vector<double> EpsilonDE::solver()
         _results[i] = _func(i, _candidates[i]);
     }
     init_epsilon();
-
+    _report_best();
     for (unsigned int i = 0; i < _iter_num; ++i)
     {
-        printf("Epsilon: %g, ", epsilon_level);
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
+        _report_best();
+
         update_epsilon();
         ++curr_gen;
     }

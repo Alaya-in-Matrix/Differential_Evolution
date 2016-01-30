@@ -48,6 +48,7 @@ protected:
     virtual size_t _find_best(const Vec2D&) const noexcept;
     virtual std::pair<size_t, std::vector<double>> _mutation_base(const Vec2D&) const noexcept;
     virtual std::string _show_strategy() const noexcept;
+    virtual void _report_best() const noexcept;
 
 public:
     virtual ~DESolver() {}
@@ -82,6 +83,7 @@ protected:
     void init_epsilon();
     void update_epsilon();
     bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
+    void _report_best() const noexcept;
 public:
     ~EpsilonDE() {}
     EpsilonDE( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f
