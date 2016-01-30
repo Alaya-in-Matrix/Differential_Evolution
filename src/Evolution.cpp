@@ -20,6 +20,7 @@ DESolver::DESolver( function <pair<double, double>(unsigned int idx, const vecto
                     , unsigned int iter_num
                     , unsigned int para_num
                     , unsigned int init_num
+                    , DE_Stragety stragety
                     , double cr
                     , double fmu
                     , double fsigma
@@ -32,6 +33,7 @@ DESolver::DESolver( function <pair<double, double>(unsigned int idx, const vecto
     , _cr(cr)
     , _fmu(fmu)
     , _fsigma(fsigma)
+    , _strategy(stragety)
 {
     assert(rg.size() == _para_num);
 
@@ -49,28 +51,80 @@ DESolver::DESolver( function <pair<double, double>(unsigned int idx, const vecto
         }
     }
 }
+string DESolver::_show_strategy() const noexcept
+{
+    string stragety_str;
+    switch (_strategy)
+    {
+    case BEST_1_BIN:
+        stragety_str = "DE/Best/1/Bin";
+        break;
+    case RAND_1_BIN:
+        stragety_str = "DE/Rand/1/Bin";
+        break;
+    case TARGET_TO_BEST_1_BIN:
+        stragety_str = "DE/Target-to-Best/1/Bin";
+        break;
+    case TARGET_TO_RAND_1_BIN:
+        stragety_str = "DE/Target-to-Rand/1/Bin";
+        break;
+    default:
+        cerr << "Unsupported stragety: " << _show_strategy() << endl;
+        exit(EXIT_FAILURE);
+    }
+    return stragety_str;
+}
 
-// 为何返回值类型不可以用"Vec2D"，参数类型却可以？
+// Generate a mutation base vector according to `_strategy`
+// return the base_vector and an index
+// why index is needed:
+//   mutation: ux = base_x + F * (solution[r1] + [r2])
+//   where (index, r1, r2) should be mutual exclusive
+// if base vector is not in solution, set index to `_init_num`
+pair<size_t, vector<double>> DESolver::_mutation_base(const Vec2D& parents) const noexcept
+{
+    vector<double> base_vector(_init_num, 0);
+    size_t idx = _init_num;
+    uniform_int_distribution<size_t> i_distr(0, _init_num - 1);
+    switch (_strategy)
+    {
+    case BEST_1_BIN:
+        idx         = _find_best(parents);
+        base_vector = parents[idx];
+        break;
+    case RAND_1_BIN:
+        idx         = i_distr(_engine);
+        base_vector = parents[idx];
+        break;
+    default:
+        cerr << "Unsupported stragety: " << _show_strategy() << endl;
+        exit(EXIT_FAILURE);
+    }
+    return make_pair(idx, base_vector);
+}
 vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcept
 {
-    size_t best_idx = _find_best(solutions);
-    uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1); // 其实 solutions.size() == _init_num?
+    assert(solutions.size() == _init_num);
+    pair<size_t, vector<double>> base_p = _mutation_base(solutions);
+    uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1); 
     normal_distribution<double> f_distr(_fmu, _fsigma);
-    const auto& x_best = solutions[best_idx];
+
+    size_t base_idx         = base_p.first;
+    vector<double> base_vec = base_p.second;
 
     Vec2D v;
     v.reserve(solutions.size());
     for (size_t i = 0; i < solutions.size(); ++i)
     {
         double f  = f_distr(_engine);
-        size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx});
-        size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1});
+        size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {base_idx});
+        size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {base_idx, r1});
         const auto& x_r1 = solutions[r1];
         const auto& x_r2 = solutions[r2];
         v.push_back(vector<double>(_para_num));
         for (size_t j = 0; j < _para_num; ++j)
         {
-            double tmp = x_best[j] + f * (x_r1[j] - x_r2[j]);
+            double tmp = base_vec[j] + f * (x_r1[j] - x_r2[j]);
             double lb  = _ranges[j].first;
             double ub  = _ranges[j].second;
             // Random reinitiate
@@ -124,24 +178,6 @@ void DESolver::_selection(const Vec2D& x, const Vec2D& u) noexcept
 }
 bool DESolver::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    // // Feasibility Rules
-    // if(p1.second == 0 && p2.second == 0)
-    // {
-    //     return p1.first <= p2.first;
-    // }
-    // else if(p1.second <= 0 && p2.second > 0)
-    // {
-    //     return true;
-    // }
-    // else if(p1.second > 0 && p2.second <= 0)
-    // {
-    //     return false;
-    // }
-    // else 
-    // {
-    //     return p1.second <= p2.second;
-    // }
-
     // static penalty
     return p1.first + p1.second <= p2.first + p2.second;
 }
@@ -153,9 +189,9 @@ size_t DESolver::_find_best(const Vec2D& solutions) const noexcept
     // }));
     size_t best_idx  = 0;
     auto best_result = _results[0];
-    for(size_t i = 0; i < _results.size(); ++i)
+    for (size_t i = 0; i < _results.size(); ++i)
     {
-        if(_better(_results[i], best_result))
+        if (_better(_results[i], best_result))
         {
             best_idx    = i;
             best_result = _results[i];
@@ -197,7 +233,7 @@ vector<double> DESolver::solver()
     size_t best_idx = _find_best(_candidates);
     return _candidates[best_idx];
 }
-vector<double> EpsilonDE_Best_1::solver()
+vector<double> EpsilonDE::solver()
 {
     _candidates.clear();
     _candidates.reserve(_init_num);
@@ -233,25 +269,25 @@ vector<double> EpsilonDE_Best_1::solver()
     size_t best_idx = _find_best(_candidates);
     return _candidates[best_idx];
 }
-void EpsilonDE_Best_1::init_epsilon() 
+void EpsilonDE::init_epsilon()
 {
     assert(_results.size() == _init_num);
     vector<double> c_violation;
-    for(auto rp : _results)
+    for (auto rp : _results)
         c_violation.push_back(rp.second);
     sort(c_violation.begin(), c_violation.end());
     // At least on non-fail point should be sampled
-    if(std::isinf(c_violation[0]))
+    if (std::isinf(c_violation[0]))
     {
         cerr << "All initial sampling faile(constraint violation is infinity)" << endl;
         cerr << "You may need to check your objective function or run this program again" << endl;
         exit(EXIT_FAILURE);
     }
     size_t idx = (size_t)floor(theta * c_violation.size());
-    if(std::isinf(c_violation[idx]) && idx > 0)
+    if (std::isinf(c_violation[idx]) && idx > 0)
     {
         size_t tmp_idx = idx;
-        while(std::isinf(c_violation[tmp_idx]) && tmp_idx > 0) 
+        while (std::isinf(c_violation[tmp_idx]) && tmp_idx > 0)
             --tmp_idx;
         idx = (0 + tmp_idx) / 2; // use median
     }
@@ -259,16 +295,16 @@ void EpsilonDE_Best_1::init_epsilon()
     epsilon_level = epsilon_0;
 }
 
-void EpsilonDE_Best_1::update_epsilon() 
+void EpsilonDE::update_epsilon()
 {
-    if(curr_gen > tc)
+    if (curr_gen > tc)
         epsilon_level = 0;
     else
         epsilon_level = epsilon_0 * pow(1 - (double)curr_gen / (double)tc, cp);
 }
-bool EpsilonDE_Best_1::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
+bool EpsilonDE::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
-    if((p1.second <= epsilon_level && p2.second <= epsilon_level) || p1.second == p2.second)
+    if ((p1.second <= epsilon_level && p2.second <= epsilon_level) || p1.second == p2.second)
     {
         return p1.first <= p2.first;
     }
@@ -277,23 +313,23 @@ bool EpsilonDE_Best_1::_better(const pair<double, double>& p1, const pair<double
         return p1.second <= p2.second;
     }
 }
-bool FeasibilityRule_Best_1::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
+bool FeasibilityRuleDE::_better(const pair<double, double>& p1, const pair<double, double>& p2) const noexcept
 {
     // Feasibility Rules
     // Advantage: no additional parameters added, avoid manually setting penalty factor
-    if(p1.second == 0 && p2.second == 0)        // if both solutions are feasible, compare objective function
+    if (p1.second == 0 && p2.second == 0)       // if both solutions are feasible, compare objective function
     {
         return p1.first <= p2.first;
     }
-    else if(p1.second <= 0 && p2.second > 0)    // feasible solution is superior to infeasible solution
+    else if (p1.second <= 0 && p2.second > 0)   // feasible solution is superior to infeasible solution
     {
         return true;
     }
-    else if(p1.second > 0 && p2.second <= 0)
+    else if (p1.second > 0 && p2.second <= 0)
     {
         return false;
     }
-    else                                        // if both solutions are infeasible, compare constraint violation 
+    else                                        // if both solutions are infeasible, compare constraint violation
     {
         return p1.second <= p2.second;
     }

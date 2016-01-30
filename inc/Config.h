@@ -18,7 +18,7 @@ class Config
     std::vector<std::pair<double, double>> _ranges;
 
     // DE settings and working directories
-    unsigned int _iter_num; 
+    unsigned int _iter_num;
     unsigned int _para_num;
     unsigned int _population;
     unsigned int _thread_num;
@@ -29,7 +29,7 @@ class Config
     // sim info
     std::string _para_file; // You should ".inc" this para_file in your testbench file
     std::string _circuit_dir;
-    std::string _testbench; 
+    std::string _testbench;
     std::string _sim_tool;
     const std::vector<std::string> _supported_sim_tool{"hspice", "hspice64", "hspicerf64"};
 
@@ -43,7 +43,7 @@ class Config
     std::string _fom_name;
     double _fom_direction;
     std::unordered_map<std::string, double> _constraints;
-    std::unordered_map<std::string, double> _constr_weight; 
+    std::unordered_map<std::string, double> _constr_weight;
 
     void set_para();
     void set_opt_settings() noexcept; //these settings have default value, so no exception would be thrown
@@ -53,7 +53,7 @@ class Config
 public:
     // I perhaps should use TOML format config file
     // as it is more human-readable
-    enum SpecFormat { Json = 0, TOML }; 
+    enum SpecFormat { Json = 0, TOML };
     Config(std::string, SpecFormat = Json);
     Config(const ptree& );
     void print() const noexcept;

@@ -4,6 +4,14 @@
 #include <functional>
 #include <utility>
 #include <random>
+#include <string>
+enum DE_Stragety {
+    BEST_1_BIN = 0 
+    , RAND_1_BIN 
+    , TARGET_TO_RAND_1_BIN 
+    , TARGET_TO_BEST_1_BIN 
+};
+
 class DESolver
 {
     // Default DE solver
@@ -27,15 +35,19 @@ protected:
     const double _fmu;
     const double _fsigma;
 
+    const DE_Stragety _strategy;
 
     Vec2D _candidates;
     // fom and constraint violation
     std::vector<std::pair<double, double>> _results;
-    virtual bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
-    size_t _find_best(const Vec2D&) const noexcept;
-    virtual Vec2D _mutation(const Vec2D&) const noexcept;
-    virtual Vec2D _crossover(const Vec2D&, const Vec2D&) const noexcept;
-    virtual void _selection(const Vec2D&, const Vec2D&) noexcept;
+    virtual Vec2D  _mutation(const Vec2D&) const noexcept;
+    virtual Vec2D  _crossover(const Vec2D&, const Vec2D&) const noexcept;
+    virtual void   _selection(const Vec2D&, const Vec2D&) noexcept;
+
+    virtual bool   _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
+    virtual size_t _find_best(const Vec2D&) const noexcept;
+    virtual std::pair<size_t, std::vector<double>> _mutation_base(const Vec2D&) const noexcept;
+    virtual std::string _show_strategy() const noexcept;
 
 public:
     virtual ~DESolver() {}
@@ -44,21 +56,22 @@ public:
               , unsigned int iter_num
               , unsigned int para_num
               , unsigned int init_num
-              , double cr     = 0.8
-              , double fmu    = 0.75
-              , double fsigma = 0.25
+              , DE_Stragety stragety = BEST_1_BIN
+              , double cr            = 0.8
+              , double fmu           = 0.75
+              , double fsigma        = 0.25
             );
     virtual std::vector<double> solver();
 };
-class FeasibilityRule_Best_1 : public DESolver
+class FeasibilityRuleDE : public DESolver
 {
 protected:
     bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
 public:
-    ~FeasibilityRule_Best_1(){}
+    ~FeasibilityRuleDE(){}
     using DESolver::DESolver;
 };
-class EpsilonDE_Best_1 : public DESolver
+class EpsilonDE : public DESolver
 {
 protected:
     double epsilon_0;
@@ -70,20 +83,21 @@ protected:
     void update_epsilon();
     bool _better(const std::pair<double, double>& p1, const std::pair<double, double>& p2) const noexcept;
 public:
-    ~EpsilonDE_Best_1() {}
-    EpsilonDE_Best_1( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f
+    ~EpsilonDE() {}
+    EpsilonDE( std::function <std::pair<double, double>(unsigned int idx, const std::vector<double>&)> f
                       , RangeVec rg
                       , unsigned int iter_num
                       , unsigned int para_num
                       , unsigned int init_num
-                      , double cr      = 0.8
-                      , double fmu     = 0.75
-                      , double fsigma  = 0.25
-                      , double theta   = 0.2
-                      , double tc_rate = 0.1
-                      , double cp      = 2
+                      , DE_Stragety stragety = BEST_1_BIN
+                      , double cr            = 0.8
+                      , double fmu           = 0.75
+                      , double fsigma        = 0.25
+                      , double theta         = 0.2
+                      , double tc_rate       = 0.1
+                      , double cp            = 2
                     )
-        : DESolver(f, rg, iter_num, para_num, init_num, cr, fmu, fsigma)
+        : DESolver(f, rg, iter_num, para_num, init_num, stragety, cr, fmu, fsigma)
         , theta(theta)
         , cp(cp)
         , tc((unsigned int)floor(tc_rate * iter_num))
