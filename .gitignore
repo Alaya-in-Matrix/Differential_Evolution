@@ -3,6 +3,7 @@ param.sp
 bin/
 backup/
 out_build/
+_build/
 build.sh
 .ycm_extra_conf.py*
 
