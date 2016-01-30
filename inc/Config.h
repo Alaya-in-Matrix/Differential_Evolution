@@ -36,6 +36,7 @@ class Config
     // measured variables
     std::unordered_map<std::string, std::vector<std::string>> _measured_vars;
     std::unordered_map<std::string, std::string> _measured_func;
+    std::unordered_map<std::string, double> _measured_vars_on_fail;
 
     // spec
     // usage: auto w = OptDirectionWeight[Minimize]...

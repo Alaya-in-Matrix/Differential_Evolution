@@ -13,7 +13,8 @@
 #include "hspice_util.h"
 using namespace std;
 using namespace boost::property_tree;
-void Config::set_para() { // I really miss Maybe monad in haskell!
+void Config::set_para()   // I really miss Maybe monad in haskell!
+{
     ptree para_tree;
     _para_names.clear();
     _ranges.clear();
@@ -93,20 +94,23 @@ void Config::set_measured_vars()
         ptree meas_tree = _info_tree.get_child("measured");
         _measured_vars.clear();
         _measured_func.clear();
-        for(const auto& node : meas_tree)
+        _measured_vars_on_fail.clear();
+        for (const auto& node : meas_tree)
         {
             const auto& node_tree = node.second;
             const string name      = node_tree.get<string>("name");
             const string meas_file = node_tree.get<string>("file");
             const string func_str  = node_tree.get<string>("func");
-            if(_measured_vars.find(meas_file) == _measured_vars.end())
-                _measured_vars[meas_file] = vector<string>{name};
+            const double on_fail   = node_tree.get<double>("onfail", numeric_limits<double>::quiet_NaN());
+            if (_measured_vars.find(meas_file) == _measured_vars.end())
+                _measured_vars[meas_file] = vector<string> {name};
             else
                 _measured_vars[meas_file].push_back(name);
 
-            if(_measured_func.find(name) != _measured_func.end())
+            if (_measured_func.find(name) != _measured_func.end())
                 throw invalid_argument("variable " + name + " is measured twice!");
-            _measured_func[name] = func_str;
+            _measured_func[name]         = func_str;
+            _measured_vars_on_fail[name] = on_fail;
         }
     }
     catch (ptree_error& e)
@@ -213,25 +217,82 @@ Config::Config(const ptree& pt)
         exit(EXIT_FAILURE);
     }
 }
-vector<string> Config::get_para_names() const noexcept { return _para_names; }
-vector<pair<double, double>> Config::get_para_ranges() const noexcept { return _ranges; }
-unsigned int Config::iter_num() const noexcept { return _iter_num; }
-unsigned int Config::para_num() const noexcept { return _para_num; }
-unsigned int Config::population() const noexcept { return _population; }
-unsigned int Config::thread_num() const noexcept { return _thread_num; }
-string Config::prj_dir() const noexcept { return _out_dir; }
-string Config::out_dir() const noexcept { return _out_dir; }
-string Config::workspace() const noexcept { return _workspace; }
-string Config::sim_tool() const noexcept { return _sim_tool; }
-string Config::para_file() const noexcept { return _para_file; }
-string Config::circuit_dir() const noexcept { return _circuit_dir; }
-string Config::testbench() const noexcept { return _testbench; }
-unordered_map<string, vector<string>> Config::measured_vars() const noexcept { return _measured_vars; }
-double Config::penalty_weight() const noexcept { return _penalty_weight; }
-string Config::fom_name() const noexcept { return _fom_name; }
-int Config::fom_direction_weight() const noexcept { return _fom_direction; }
-std::unordered_map<std::string, double> Config::constraints() const noexcept { return _constraints; }
-std::unordered_map<std::string, double> Config::constraints_weight() const noexcept { return _constr_weight; }
+vector<string> Config::get_para_names() const noexcept
+{
+    return _para_names;
+}
+vector<pair<double, double>> Config::get_para_ranges() const noexcept
+{
+    return _ranges;
+}
+unsigned int Config::iter_num() const noexcept
+{
+    return _iter_num;
+}
+unsigned int Config::para_num() const noexcept
+{
+    return _para_num;
+}
+unsigned int Config::population() const noexcept
+{
+    return _population;
+}
+unsigned int Config::thread_num() const noexcept
+{
+    return _thread_num;
+}
+string Config::prj_dir() const noexcept
+{
+    return _out_dir;
+}
+string Config::out_dir() const noexcept
+{
+    return _out_dir;
+}
+string Config::workspace() const noexcept
+{
+    return _workspace;
+}
+string Config::sim_tool() const noexcept
+{
+    return _sim_tool;
+}
+string Config::para_file() const noexcept
+{
+    return _para_file;
+}
+string Config::circuit_dir() const noexcept
+{
+    return _circuit_dir;
+}
+string Config::testbench() const noexcept
+{
+    return _testbench;
+}
+unordered_map<string, vector<string>> Config::measured_vars() const noexcept
+{
+    return _measured_vars;
+}
+double Config::penalty_weight() const noexcept
+{
+    return _penalty_weight;
+}
+string Config::fom_name() const noexcept
+{
+    return _fom_name;
+}
+int Config::fom_direction_weight() const noexcept
+{
+    return _fom_direction;
+}
+std::unordered_map<std::string, double> Config::constraints() const noexcept
+{
+    return _constraints;
+}
+std::unordered_map<std::string, double> Config::constraints_weight() const noexcept
+{
+    return _constr_weight;
+}
 void Config::print() const noexcept
 {
     printf("iter num: %d\n", _iter_num);
@@ -245,17 +306,17 @@ void Config::print() const noexcept
     puts("==================================================================================");
     assert(_para_names.size() == _ranges.size());
     assert(_para_names.size() == _para_num);
-    for(size_t i = 0; i < _para_num; ++i)
+    for (size_t i = 0; i < _para_num; ++i)
     {
         printf("param %s = (%.2f ~ %.2f)\n", _para_names[i].c_str(), _ranges[i].first, _ranges[i].second);
     }
     puts("==================================================================================");
     printf("measured variables: \n");
-    for(auto meas_p : _measured_vars)
+    for (auto meas_p : _measured_vars)
     {
         string file = meas_p.first;
         printf("\t%s:\n", file.c_str());
-        for(auto var : meas_p.second)
+        for (auto var : meas_p.second)
         {
             printf("\t\t%s\n", var.c_str());
         }
@@ -267,28 +328,29 @@ double Config::process_measured(const string var_name, const vector<double>& dat
 {
     assert(! data.empty());
     const auto iter = _measured_func.find(var_name);
-    if(iter == _measured_func.end())
+    if (iter == _measured_func.end())
     {
         cerr << "function can not find for variable " << var_name << endl;
         exit(EXIT_FAILURE);
     }
     const string func_str = iter->second;
-    bool no_nan = data.end() == find_if(data.begin(), data.end(), [](double x) -> bool{
-            return x != x; // check whether a floating number is NaN
+    bool no_nan = data.end() == find_if(data.begin(), data.end(), [](double x) -> bool
+    {
+        return x != x; // check whether a floating number is NaN
     });
-    if(func_str == "min")
+    if (func_str == "min")
     {
         return no_nan ? *(min_element(data.begin(), data.end())) : numeric_limits<double>::quiet_NaN();
     }
-    else if(func_str == "max")
+    else if (func_str == "max")
     {
         return no_nan ? *(max_element(data.begin(), data.end())) : numeric_limits<double>::quiet_NaN();
     }
-    else if(func_str == "head")
+    else if (func_str == "head")
     {
         return data[0];
     }
-    else 
+    else
     {
         cerr << "Unsupported function: " << func_str << endl;
         exit(EXIT_FAILURE);
