@@ -205,6 +205,13 @@ unordered_map<string, double> Optimizer::simulation(unsigned int pop_idx, const 
                         exit(EXIT_FAILURE);
                     }
                     vector<double> meas_vec = tmp_measured.find(var_name)->second;
+                    for(auto& v : meas_vec)
+                    {
+                        if(std::isnan(v))
+                        {
+                            v = _opt_info.lookup_onfail(var_name);
+                        }
+                    }
                     measured[var_name] = _opt_info.process_measured(var_name, meas_vec);
                 }
             }

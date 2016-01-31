@@ -78,4 +78,5 @@ public:
     std::unordered_map<std::string, double> constraints() const noexcept;
     std::unordered_map<std::string, double> constraints_weight() const noexcept;
     double process_measured(const std::string, const std::vector<double>&) const noexcept;
+    double lookup_onfail(const std::string) const noexcept;
 };

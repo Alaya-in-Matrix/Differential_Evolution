@@ -356,3 +356,15 @@ double Config::process_measured(const string var_name, const vector<double>& dat
         exit(EXIT_FAILURE);
     }
 }
+double Config::lookup_onfail(const string var_name) const noexcept
+{
+    auto iter = _measured_vars_on_fail.find(var_name);
+    if(iter == _measured_vars_on_fail.end())
+    {
+        return numeric_limits<double>::quiet_NaN();
+    }
+    else
+    {
+        return iter->second;
+    }
+}
