@@ -234,7 +234,7 @@ void EpsilonDE::_report_best() const noexcept
 {
     size_t best_idx = _find_best(_candidates);
     const auto& best = _results[best_idx];
-    printf("Epsilon: %g, Current Best idx: %ld, Fom: %g, Constraint Violation: %g\n", epsilon_level, best_idx, best.first, best.second);
+    printf("CurrGen: %u, TC: %u, Epsilon: %g, Current Best idx: %ld, Fom: %g, Constraint Violation: %g\n", curr_gen, tc, epsilon_level, best_idx, best.first, best.second);
 }
 vector<double> EpsilonDE::solver()
 {
@@ -262,13 +262,12 @@ vector<double> EpsilonDE::solver()
     _report_best();
     for (unsigned int i = 0; i < _iter_num; ++i)
     {
+        ++curr_gen;
         auto v      = _mutation(_candidates); // 会做返回值优化吧
         auto u      = _crossover(_candidates, v);
         _selection(_candidates, u);
         _report_best();
-
         update_epsilon();
-        ++curr_gen;
     }
     size_t best_idx = _find_best(_candidates);
     return _candidates[best_idx];

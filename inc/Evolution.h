@@ -35,7 +35,7 @@ protected:
     const double _fmu;
     const double _fsigma;
 
-    const DE_Stragety _strategy;
+    DE_Stragety _strategy;
 
     Vec2D _candidates;
     // fom and constraint violation
@@ -96,8 +96,8 @@ public:
                       , double fmu           = 0.75
                       , double fsigma        = 0.25
                       , double theta         = 0.2
-                      , double tc_rate       = 0.1
-                      , double cp            = 2
+                      , double tc_rate       = 0.2
+                      , double cp            = 5
                     )
         : DESolver(f, rg, iter_num, para_num, init_num, stragety, cr, fmu, fsigma)
         , theta(theta)

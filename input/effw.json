@@ -1,6 +1,6 @@
 {
-    "iter_num": 600, 
-    "init_num": 200, 
+    "iter_num": 1250, 
+    "init_num": 40, 
     "out_dir": "out/effw",
     "workspace": "workspace/effw",
     "thread_num":4, 
@@ -47,12 +47,12 @@
     },
     "measured": [
         {"name" : "gain", "file" : "Single_ended.ma0", "func" : "min"} 
-        , {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min"} 
-        , {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min"} 
+        , {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min", "onfail":0} 
+        , {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min", "onfail":-180} 
         , {"name" : "power",   "file" : "Single_ended.ma0", "func" : "max"}
     ], 
     "spec": {
-        "penalty_weight": 1,
+        "penalty_weight": 8,
         "fom": {
             "name": "gain",
             "type": "maximize"
