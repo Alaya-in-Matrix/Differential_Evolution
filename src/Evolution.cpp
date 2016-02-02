@@ -105,17 +105,16 @@ pair<size_t, vector<double>> DESolver::_mutation_base(const Vec2D& parents) cons
 vector<vector<double>> DESolver::_mutation(const Vec2D& solutions) const noexcept
 {
     assert(solutions.size() == _init_num);
-    pair<size_t, vector<double>> base_p = _mutation_base(solutions);
     uniform_int_distribution<size_t> i_distr(0, solutions.size() - 1);
     normal_distribution<double> f_distr(_fmu, _fsigma);
-
-    size_t base_idx         = base_p.first;
-    vector<double> base_vec = base_p.second;
 
     Vec2D v;
     v.reserve(solutions.size());
     for (size_t i = 0; i < solutions.size(); ++i)
     {
+        pair<size_t, vector<double>> base_p = _mutation_base(solutions);
+        size_t base_idx         = base_p.first;
+        vector<double> base_vec = base_p.second;
         double f  = f_distr(_engine);
         size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {base_idx});
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {base_idx, r1});
