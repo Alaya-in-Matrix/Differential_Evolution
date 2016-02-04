@@ -108,14 +108,14 @@ class DE
 {
 protected:
     Objective _func;
-    Ranges _ranges;
-    double _f;
-    double _cr;
-    size_t _curr_gen;
+    const Ranges _ranges;
+    const double _f;
+    const double _cr;
     const size_t _np;
     const size_t _dim;
     const size_t _max_iter;
     const std::unordered_map<std::string, double> _extra_conf;
+    size_t _curr_gen;
     std::vector<Solution>  _population; // use vector to represent a 2D matrix might not be efficient
     std::vector<Evaluated> _results;
 
@@ -133,21 +133,21 @@ public:
        IMutator* m,
        ICrossover* c,
        ISelector* s,
-       std::unordered_map<std::string, double> extra_para = std::unordered_map<std::string, double> {},
        double f          = 0.8,
        double cr         = 0.8,
        size_t np         = 100,
-       size_t max_iter   = 200);
+       size_t max_iter   = 200, 
+       std::unordered_map<std::string, double> extra_para = std::unordered_map<std::string, double> {});
     DE(Objective,
        const Ranges&,
        MutationStrategy  = Best1,
        CrossoverStrategy = Bin,
        SelectionStrategy = StaticPenalty,
-       std::unordered_map<std::string, double> extra_para = std::unordered_map<std::string, double> {},
        double f          = 0.8,
        double cr         = 0.8,
        size_t np         = 100,
-       size_t max_iter   = 200);
+       size_t max_iter   = 200, 
+       std::unordered_map<std::string, double> extra_para = std::unordered_map<std::string, double> {});
     ~DE();
     Solution solver();
 

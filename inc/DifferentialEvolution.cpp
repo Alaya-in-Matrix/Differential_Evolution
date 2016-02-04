@@ -114,10 +114,10 @@ vector<Solution> Crossover_Bin::crossover(const DE& de, const vector<Solution>& 
 vector<Solution> Crossover_Exp::crossover(const DE& de, const vector<Solution>& targets, const vector<Solution>& doners)
 {
     assert(targets.size() == de.np() && de.np() == doners.size());
-    uniform_int_distribution<size_t>  int_distr(0, de.dimension() - 1);
-    uniform_real_distribution<double> real_distr(0, 1);
     const double cr         = de.cr();
     const size_t dim        = de.dimension();
+    uniform_int_distribution<size_t>  int_distr(0, dim - 1);
+    uniform_real_distribution<double> real_distr(0, 1);
     vector<Solution> trials = targets;
     for (size_t i = 0; i < de.np(); ++i)
     {
@@ -127,7 +127,7 @@ vector<Solution> Crossover_Exp::crossover(const DE& de, const vector<Solution>& 
         const size_t start_idx = int_distr(engine);
         for (size_t j = start_idx; j < start_idx + l; ++j)
         {
-            trials[i][j] = doners[i][j];
+            trials[i][j%dim] = doners[i][j%dim];
         }
     }
     return trials;
@@ -207,9 +207,9 @@ bool Selector_Epsilon::better(const Evaluated& r1, const Evaluated& r2)
 }
 DE::DE(Objective func , const Ranges& rg
        , MutationStrategy ms , CrossoverStrategy cs , SelectionStrategy ss
-       , unordered_map<string, double> extra
-       , double f , double cr , size_t np , size_t max_iter)
-    : _func(func), _f(f), _cr(cr), _curr_gen(0), _np(np), _dim(rg.size()), _max_iter(max_iter), _extra_conf(extra), _use_built_in_strategy(false)
+       , double f , double cr , size_t np , size_t max_iter
+       , unordered_map<string, double> extra)
+    : _func(func), _ranges(rg), _f(f), _cr(cr), _np(np), _dim(rg.size()), _max_iter(max_iter), _extra_conf(extra),_curr_gen(0), _use_built_in_strategy(false)
 {
     set_mutator(ms, extra);
     set_crossover(cs, extra);
@@ -217,10 +217,10 @@ DE::DE(Objective func , const Ranges& rg
 }
 DE::DE(Objective func, const Ranges& rg
        , IMutator* m, ICrossover* c, ISelector* s
-       , unordered_map<string, double> extra
-       , double f , double cr , size_t np , size_t max_iter)
-    : _func(func), _ranges(rg), _f(f), _cr(cr), _curr_gen(0), _np(np), _dim(rg.size()), _max_iter(max_iter)
-    , _extra_conf(extra), _mutator(m), _crossover(c), _selector(s), _use_built_in_strategy(true)
+       , double f , double cr , size_t np , size_t max_iter
+       , unordered_map<string, double> extra)
+    : _func(func), _ranges(rg), _f(f), _cr(cr), _np(np), _dim(rg.size()), _max_iter(max_iter)
+    , _extra_conf(extra),_curr_gen(0), _mutator(m), _crossover(c), _selector(s), _use_built_in_strategy(true)
 {}
 Solution DE::solver()
 {
@@ -312,16 +312,13 @@ void DE::init()
     // rate of populations with non-infinity constraint violationss
     _population = vector<Solution>(_np, vector<double>(_dim, 0));
     _results    = vector<Evaluated>(_np);
-    double theta = _extra_conf.find("theta") == _extra_conf.end() ? _extra_conf.find("theta")->second : 0;
+    double theta = _extra_conf.find("theta") == _extra_conf.end() ? 0 : _extra_conf.find("theta")->second;
     if (theta < 0) theta = 0;
     if (theta > 1) theta = 1;
     size_t min_valid_num = (size_t)(_np * theta);
-    vector<uniform_real_distribution<double>> range_distr(_dim);
-    for (size_t i =  0; i < _dim; ++i)
-        range_distr[i] = uniform_real_distribution<double>(_ranges[i].first, _ranges[i].second);
     vector<bool> valid(_np, false);
     size_t num_valid = 0;
-    while (num_valid < min_valid_num)
+    do
     {
         #pragma omp parallel for reduction(+:num_valid)
         for (size_t i = 0; i < _np; ++i)
@@ -332,7 +329,10 @@ void DE::init()
                 {
                     for (size_t j = 0; j < _dim; ++j)
                     {
-                        _population[i][j] = range_distr[j](engine);
+                        double lb = _ranges.at(j).first;
+                        double ub = _ranges.at(j).second;
+                        uniform_real_distribution<double> distr(lb, ub);
+                        _population[i][j] = distr(engine);
                     }
                 }
                 _results[i] = _func(_population[i]);
@@ -345,6 +345,13 @@ void DE::init()
                 num_valid += valid_flag ? 1 : 0;
             }
         }
+    }
+    while (num_valid < min_valid_num);
+    for(Solution p : _population)
+    {
+        for(double pp : p)
+            cout << pp << ' ';
+        cout << endl;
     }
 }
 size_t DE::find_best() const noexcept
