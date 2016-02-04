@@ -8,8 +8,12 @@ message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
 set(EXE de-solver)
+set(TEST testbench)
 set(DE_LIB de)
 include_directories(inc)
+add_executable(${TEST}
+    test/test.cpp
+    src/DifferentialEvolution.cpp)
 add_executable(${EXE} 
     src/Optimizer.cpp 
     src/hspice_util.cpp

@@ -347,12 +347,6 @@ void DE::init()
         }
     }
     while (num_valid < min_valid_num);
-    for(Solution p : _population)
-    {
-        for(double pp : p)
-            cout << pp << ' ';
-        cout << endl;
-    }
 }
 size_t DE::find_best() const noexcept
 {
