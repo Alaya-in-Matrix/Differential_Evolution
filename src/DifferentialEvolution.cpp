@@ -7,7 +7,7 @@
 #include <numeric>
 #include <string>
 using namespace std;
-mt19937_64 engine(random_device{}());
+static mt19937_64 engine(random_device{}());
 double IMutator::boundary_constraint(pair<double, double> rg, double val) const noexcept
 {
     assert(rg.first <= rg.second);
