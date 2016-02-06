@@ -4,6 +4,15 @@
     "out_dir": "out/effw",
     "workspace": "workspace/effw",
     "thread_num":4, 
+    "algorithm":{
+        "type"      : "DE",
+        "f"         : 0.8,
+        "cr"        : 0.8,
+        "mutation"  : "best1",
+        "crossover" : "bin",
+        "selection" : "static-penalty",
+        "extra"     : {}
+    },
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 1 }
         , { "name": "ival",      "lb": 0.1,  "ub": 1 }

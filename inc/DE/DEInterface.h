@@ -1,6 +1,13 @@
 #pragma once
 #include "DEStrategy.h"
+#include <vector>
 #include <unordered_map>
+#include <functional>
+typedef std::vector<double> Solution;
+typedef std::vector<std::pair<double, double>> Ranges;
+typedef std::vector<double> ConstraintViolation;
+typedef std::pair<double, ConstraintViolation> Evaluated;
+typedef std::function<Evaluated(const Solution&)> Objective;
 class DE;
 class IMutator
 {

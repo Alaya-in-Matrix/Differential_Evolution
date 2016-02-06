@@ -11,6 +11,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include "Config.h"
 #include "hspice_util.h"
+#include "DE/DEStrategy.h"
 using namespace std;
 using namespace boost::property_tree;
 void Config::set_para()   // I really miss Maybe monad in haskell!
@@ -59,6 +60,49 @@ void Config::set_opt_settings() noexcept
     _prj_dir    = _info_tree.get("prj_dir", ".") + "/";
     _out_dir    = _prj_dir + _info_tree.get("out_dir", "out");
     _workspace  = _prj_dir + _info_tree.get("workspace", "workspace");
+}
+void Config::set_algo_para()
+{
+    try
+    {
+        const auto& algo_setting = _info_tree.get_child("algorithm");
+        string ms_str = algo_setting.get("mutation", "best1");
+        string cs_str = algo_setting.get("crossover", "bin");
+        string ss_str = algo_setting.get("selection", "static-penalty");
+        auto ms_iter  = ms_lut.find(ms_str);
+        auto cs_iter  = cs_lut.find(cs_str);
+        auto ss_iter  = ss_lut.find(ss_str);
+        if(ms_iter == ms_lut.end())
+            throw invalid_argument("Unrecognized mutation strategy: " + ms_str);
+        if(cs_iter == cs_lut.end())
+            throw invalid_argument("Unrecognized crossover strategy: " + cs_str);
+        if(ss_iter == ss_lut.end())
+            throw invalid_argument("Unrecognized selection strategy: " + ss_str);
+        _de_type     = algo_setting.get("de_type", "DE");
+        _f           = algo_setting.get("f", 0.8);
+        _cr          = algo_setting.get("cr", 0.9);
+        _ms = ms_iter->second;
+        _cs = cs_iter->second;
+        _ss = ss_iter->second;
+        // const auto& extra_setting = algo_setting.get_child("extra");
+        // for(auto iter = extra_setting.begin(); iter != extra_setting.end(); ++iter)
+        // {
+        // }
+    }
+    catch (const ptree_error& e)
+    {
+        _de_type = "DE";
+        _f       = 0.8;
+        _cr      = 0.9;
+        _ms      = MutationStrategy::Best1;
+        _cs      = CrossoverStrategy::Bin;
+        _ss      = SelectionStrategy::StaticPenalty;
+    }
+    catch (const exception& e)
+    {
+        cerr << e.what() << endl;
+        exit(EXIT_FAILURE);
+    }
 }
 void Config::set_sim_info()
 {
@@ -183,6 +227,7 @@ Config::Config(string config, SpecFormat format)
         set_sim_info();
         set_measured_vars();
         set_spec();
+        set_algo_para();
     }
     catch (ptree_error& e)
     {
@@ -205,6 +250,7 @@ Config::Config(const ptree& pt)
         set_sim_info();
         set_measured_vars();
         set_spec();
+        set_algo_para();
     }
     catch (ptree_error& e)
     {
@@ -216,113 +262,6 @@ Config::Config(const ptree& pt)
         cerr << "Exception: " << e.what() << endl;
         exit(EXIT_FAILURE);
     }
-}
-vector<string> Config::get_para_names() const noexcept
-{
-    return _para_names;
-}
-vector<pair<double, double>> Config::get_para_ranges() const noexcept
-{
-    return _ranges;
-}
-unsigned int Config::iter_num() const noexcept
-{
-    return _iter_num;
-}
-unsigned int Config::para_num() const noexcept
-{
-    return _para_num;
-}
-unsigned int Config::population() const noexcept
-{
-    return _population;
-}
-unsigned int Config::thread_num() const noexcept
-{
-    return _thread_num;
-}
-string Config::prj_dir() const noexcept
-{
-    return _out_dir;
-}
-string Config::out_dir() const noexcept
-{
-    return _out_dir;
-}
-string Config::workspace() const noexcept
-{
-    return _workspace;
-}
-string Config::sim_tool() const noexcept
-{
-    return _sim_tool;
-}
-string Config::para_file() const noexcept
-{
-    return _para_file;
-}
-string Config::circuit_dir() const noexcept
-{
-    return _circuit_dir;
-}
-string Config::testbench() const noexcept
-{
-    return _testbench;
-}
-unordered_map<string, vector<string>> Config::measured_vars() const noexcept
-{
-    return _measured_vars;
-}
-double Config::penalty_weight() const noexcept
-{
-    return _penalty_weight;
-}
-string Config::fom_name() const noexcept
-{
-    return _fom_name;
-}
-int Config::fom_direction_weight() const noexcept
-{
-    return _fom_direction;
-}
-std::unordered_map<std::string, double> Config::constraints() const noexcept
-{
-    return _constraints;
-}
-std::unordered_map<std::string, double> Config::constraints_weight() const noexcept
-{
-    return _constr_weight;
-}
-void Config::print() const noexcept
-{
-    printf("iter num: %d\n", _iter_num);
-    printf("dimension: %d\n", _para_num);
-    printf("population: %d\n", _population);
-    printf("thread_num: %d\n", _thread_num);
-    printf("output directory: %s\n", _out_dir.c_str());
-    printf("workspace: %s\n", _workspace.c_str());
-    printf("circuit: %s/%s\n", _circuit_dir.c_str(), _testbench.c_str());
-    printf("sim tool: %s\n", _sim_tool.c_str());
-    puts("==================================================================================");
-    assert(_para_names.size() == _ranges.size());
-    assert(_para_names.size() == _para_num);
-    for (size_t i = 0; i < _para_num; ++i)
-    {
-        printf("param %s = (%.2f ~ %.2f)\n", _para_names[i].c_str(), _ranges[i].first, _ranges[i].second);
-    }
-    puts("==================================================================================");
-    printf("measured variables: \n");
-    for (auto meas_p : _measured_vars)
-    {
-        string file = meas_p.first;
-        printf("\t%s:\n", file.c_str());
-        for (auto var : meas_p.second)
-        {
-            printf("\t\t%s\n", var.c_str());
-        }
-    }
-    puts("==================================================================================");
-    printf("FOM: %s %s\n", _fom_direction == 1 ? "minimize" : "maximize", _fom_name.c_str());
 }
 double Config::process_measured(const string var_name, const vector<double>& data) const noexcept
 {
@@ -359,7 +298,7 @@ double Config::process_measured(const string var_name, const vector<double>& dat
 double Config::lookup_onfail(const string var_name) const noexcept
 {
     auto iter = _measured_vars_on_fail.find(var_name);
-    if(iter == _measured_vars_on_fail.end())
+    if (iter == _measured_vars_on_fail.end())
     {
         return numeric_limits<double>::quiet_NaN();
     }

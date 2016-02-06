@@ -6,6 +6,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <string>
+#include "DE/DEStrategy.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 class Config
@@ -46,37 +47,53 @@ class Config
     std::unordered_map<std::string, double> _constraints;
     std::unordered_map<std::string, double> _constr_weight;
 
+    // algorithm
+    std::string       _de_type;
+    double            _f;
+    double            _cr;
+    MutationStrategy  _ms;
+    CrossoverStrategy _cs;
+    SelectionStrategy _ss;
+    std::unordered_map<std::string, double> _extra_conf;
+
     void set_para();
     void set_opt_settings() noexcept; //these settings have default value, so no exception would be thrown
     void set_sim_info();
     void set_measured_vars();
     void set_spec();
+    void set_algo_para();
 public:
     // I perhaps should use TOML format config file
     // as it is more human-readable
     enum SpecFormat { Json = 0, TOML };
     Config(std::string, SpecFormat = Json);
     Config(const ptree& );
-    void print() const noexcept;
-    decltype(_para_names) get_para_names() const noexcept;
-    decltype(_ranges)     get_para_ranges() const noexcept;;
-    unsigned int iter_num() const noexcept;
-    unsigned int para_num() const noexcept;
-    unsigned int population() const noexcept;
-    unsigned int thread_num() const noexcept;
-    std::string prj_dir() const noexcept;
-    std::string out_dir() const noexcept;
-    std::string workspace() const noexcept;
-    std::string para_file() const noexcept;
-    std::string circuit_dir() const noexcept;
-    std::string testbench() const noexcept;
-    std::string sim_tool() const noexcept;
-    std::unordered_map<std::string, std::vector<std::string>> measured_vars() const noexcept;
-    double penalty_weight() const noexcept;
-    std::string fom_name() const noexcept;
-    int fom_direction_weight() const noexcept;
-    std::unordered_map<std::string, double> constraints() const noexcept;
-    std::unordered_map<std::string, double> constraints_weight() const noexcept;
+    decltype(_para_names) get_para_names()  const noexcept { return _para_names;     }
+    decltype(_ranges)     get_para_ranges() const noexcept { return _ranges;         }
+    unsigned int iter_num()                 const noexcept { return _iter_num;       }
+    unsigned int para_num()                 const noexcept { return _para_num;       }
+    unsigned int population()               const noexcept { return _population;     }
+    unsigned int thread_num()               const noexcept { return _thread_num;     }
+    std::string  prj_dir()                  const noexcept { return _prj_dir;        }
+    std::string  out_dir()                  const noexcept { return _out_dir;        }
+    std::string  workspace()                const noexcept { return _workspace;      }
+    std::string  para_file()                const noexcept { return _para_file;      }
+    std::string  circuit_dir()              const noexcept { return _circuit_dir;    }
+    std::string  testbench()                const noexcept { return _testbench;      }
+    std::string  sim_tool()                 const noexcept { return _sim_tool;       }
+    std::string  fom_name()                 const noexcept { return _fom_name;       }
+    double penalty_weight()                 const noexcept { return _penalty_weight; }
+    int    fom_direction_weight()           const noexcept { return _fom_direction;  }
+    std::unordered_map<std::string, double> constraints()        const noexcept { return _constraints; }
+    std::unordered_map<std::string, double> constraints_weight() const noexcept { return _constr_weight; }
+    std::unordered_map<std::string, std::vector<std::string>> measured_vars() const noexcept { return _measured_vars; }
+    std::string  de_type()                  const noexcept { return _de_type;        }
+    double       de_f()                     const noexcept { return _f;              }
+    double       de_cr()                    const noexcept { return _cr;             }
+    MutationStrategy  mutation_strategy()   const noexcept { return _ms;             }
+    CrossoverStrategy crossover_strategy()  const noexcept { return _cs;             }
+    SelectionStrategy selection_strategy()  const noexcept { return _ss;             }
+    std::unordered_map<std::string, double> extra_conf() const noexcept { return _extra_conf; }
     double process_measured(const std::string, const std::vector<double>&) const noexcept;
     double lookup_onfail(const std::string) const noexcept;
 };
