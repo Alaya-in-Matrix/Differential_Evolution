@@ -1,6 +1,7 @@
 #include "DifferentialEvolution.h"
 #include "util.h"
 #include <iostream>
+#include <algorithm>
 #include <random>
 #include <omp.h>
 #include <cassert>
