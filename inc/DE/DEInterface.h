@@ -7,7 +7,7 @@ typedef std::vector<double> Solution;
 typedef std::vector<std::pair<double, double>> Ranges;
 typedef std::vector<double> ConstraintViolation;
 typedef std::pair<double, ConstraintViolation> Evaluated;
-typedef std::function<Evaluated(const Solution&)> Objective;
+typedef std::function<Evaluated(const size_t, const Solution&)> Objective;
 class DE;
 class IMutator
 {

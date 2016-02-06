@@ -4,6 +4,7 @@
 #include<functional>
 #include<iterator>
 #include<cassert>
+#include<numeric>
 #include"DifferentialEvolution.h"
 namespace Testbench
 {
@@ -13,7 +14,7 @@ Evaluated fuck(double r)
 {
     return make_pair(r, vector<double> {});
 }
-Evaluated ackley(const vector<double>& input)
+Evaluated ackley(const size_t, const vector<double>& input)
 {
     // range: [-35, 35]
     // global optimum: x = (0, ....., 0)
@@ -29,7 +30,7 @@ Evaluated ackley(const vector<double>& input)
     double result = -20 * exp(part1) - exp(part2) + 20 + exp(1);
     return fuck(result);
 }
-Evaluated adjiman(const vector<double>& input)
+Evaluated adjiman(const size_t, const vector<double>& input)
 {
     assert(input.size() == 2);
     // range: x1: [-1, 2], x2: [-1, 1]
@@ -38,7 +39,7 @@ Evaluated adjiman(const vector<double>& input)
     double x2 = input[1];
     return fuck(cos(x1) * sin(x2) - x1 / (1 + pow(x2, 2)));
 }
-Evaluated alpine(const vector<double>& input)
+Evaluated alpine(const size_t, const vector<double>& input)
 {
     // range: [-10, 10]
     // global optimum: (0, ..., 0) -> 0

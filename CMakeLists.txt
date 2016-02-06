@@ -18,11 +18,11 @@ add_executable(${EXE}
     src/Optimizer.cpp 
     src/hspice_util.cpp
     src/Config.cpp
-    src/Evolution.cpp
+    src/DifferentialEvolution.cpp
     src/main.cpp)
 add_library(${DE_LIB} SHARED 
-    src/Evolution.cpp
-    inc/Evolution.h)
+    src/DifferentialEvolution.cpp
+    inc/DifferentialEvolution.h)
 
 find_package(Boost 1.57 REQUIRED)
 if(Boost_FOUND)
@@ -35,7 +35,7 @@ if(CMAKE_INSTALL_PREFIX)
     install(TARGETS ${EXE} ${TEST} ${DE_LIB} 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib)
-    install(FILES inc/Evolution.h
+    install(FILES inc/DifferentialEvolution.h
         DESTINATION inc
         PERMISSIONS OWNER_READ GROUP_READ)
     install(FILES README.md

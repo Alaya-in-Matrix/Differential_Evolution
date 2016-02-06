@@ -232,7 +232,10 @@ Solution DE::solver()
         auto doners = _mutator->mutation(*this);
         auto trials = _crossover->crossover(*this, _population, doners);
         vector<Evaluated> trial_results(_np);
-        transform(trials.begin(), trials.end(), trial_results.begin(), _func);
+        for(size_t p_idx = 0; p_idx < _population.size(); ++p_idx)
+        {
+            trial_results[p_idx] = _func(p_idx, trials[p_idx]);
+        }
         auto new_result = _selector->select(*this, _population, trials, _results, trial_results);
         copy(new_result.first.begin(),  new_result.first.end(),  _results.begin());
         copy(new_result.second.begin(), new_result.second.end(), _population.begin());
@@ -336,7 +339,7 @@ void DE::init()
                         _population[i][j] = distr(engine);
                     }
                 }
-                _results[i] = _func(_population[i]);
+                _results[i] = _func(i, _population[i]);
                 bool valid_flag = true;
                 for (auto vio : _results[i].second)
                 {

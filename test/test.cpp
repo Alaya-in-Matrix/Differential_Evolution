@@ -25,8 +25,8 @@ int main()
                  , 500
                 );
     Solution best = de_solver.solver();
-    cout << "Best guess: " << f(best_guess).first << endl;
-    cout << "DE Optimized: " << f(best).first << endl;
+    cout << "Best guess: " << f(0, best_guess).first << endl;
+    cout << "DE Optimized: " << f(0, best).first << endl;
     for (auto para : best)
     {
         cout << para << endl;
