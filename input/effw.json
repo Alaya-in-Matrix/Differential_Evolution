@@ -10,7 +10,12 @@
         "cr"        : 0.8,
         "mutation"  : "best1",
         "crossover" : "bin",
-        "selection" : "static-penalty"
+        "selection" : "epsilon", 
+        "extra" : {
+            "theta" : 0.9, 
+            "tc" : 125, 
+            "cp" : 2
+        }
     },
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 1 }

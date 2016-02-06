@@ -78,7 +78,8 @@ vector<double> Optimizer::run()
                             , _opt_info.de_f()
                             , _opt_info.de_cr()
                             , _opt_info.population()
-                            , _opt_info.iter_num());
+                            , _opt_info.iter_num()
+                            , _opt_info.extra_conf());
     }
     else
     {
