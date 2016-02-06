@@ -12,9 +12,10 @@
         "crossover" : "bin",
         "selection" : "epsilon", 
         "extra" : {
-            "theta" : 0.9, 
+            "theta" : 0.2, 
             "tc" : 125, 
-            "cp" : 2
+            "cp" : 2, 
+            "min_valid_num" : 16
         }
     },
     "parameter": [
@@ -60,8 +61,8 @@
     },
     "measured": [
         {"name" : "gain", "file" : "Single_ended.ma0", "func" : "min"} 
-        , {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min", "onfail":0} 
-        , {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min", "onfail":-180} 
+        , {"name" : "ugf",  "file" : "Single_ended.ma0", "func" : "min"}
+        , {"name" : "pm",   "file" : "Single_ended.ma0", "func" : "min"}
         , {"name" : "power",   "file" : "Single_ended.ma0", "func" : "max"}
     ], 
     "spec": {

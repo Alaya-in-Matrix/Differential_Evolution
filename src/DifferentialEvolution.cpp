@@ -169,6 +169,7 @@ pair<vector<Evaluated>, vector<Solution>> Selector_Epsilon::select(const DE& de
         epsilon_0     = violations[cutoff - 1];
         epsilon_level = epsilon_0;
     }
+    cout << "Epsilon level: " << epsilon_level << endl;
     auto ret      = ISelector::select(de, targets, trials, target_results, trial_results);
     size_t gen    = de.curr_gen();
     epsilon_level = gen > tc ? 0 : epsilon_0 * pow(1 - gen / tc, cp);
@@ -316,10 +317,7 @@ void DE::init()
     // rate of populations with non-infinity constraint violationss
     _population = vector<Solution>(_np, vector<double>(_dim, 0));
     _results    = vector<Evaluated>(_np);
-    double theta = _extra_conf.find("theta") == _extra_conf.end() ? 0 : _extra_conf.find("theta")->second;
-    if (theta < 0) theta = 0;
-    if (theta > 1) theta = 1;
-    size_t min_valid_num = (size_t)(_np * theta);
+    size_t min_valid_num = _extra_conf.find("min_valid_num") == _extra_conf.end() ? 1 : _extra_conf.find("min_valid_num")->second;
     vector<bool> valid(_np, false);
     size_t num_valid = 0;
     do
@@ -349,6 +347,7 @@ void DE::init()
                 num_valid += valid_flag ? 1 : 0;
             }
         }
+        cout << "num_valid: " << num_valid << ", min_valid_num: " << min_valid_num << endl;
     }
     while (num_valid < min_valid_num);
 }
