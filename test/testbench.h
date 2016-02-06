@@ -48,6 +48,6 @@ Evaluated alpine(const size_t, const vector<double>& input)
     {
         return abs(x * sin(x) + 0.1 * x);
     });
-    return fuck(accumulate(mapped.begin(), mapped.end(), 0));
+    return fuck(accumulate(mapped.begin(), mapped.end(), 0.0));
 }
 };

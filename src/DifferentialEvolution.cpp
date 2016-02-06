@@ -1,5 +1,6 @@
 #include "DifferentialEvolution.h"
 #include "util.h"
+#include <cstdio>
 #include <iostream>
 #include <algorithm>
 #include <random>
@@ -128,7 +129,7 @@ vector<Solution> Crossover_Exp::crossover(const DE& de, const vector<Solution>& 
         const size_t start_idx = int_distr(engine);
         for (size_t j = start_idx; j < start_idx + l; ++j)
         {
-            trials[i][j%dim] = doners[i][j%dim];
+            trials[i][j % dim] = doners[i][j % dim];
         }
     }
     return trials;
@@ -163,30 +164,31 @@ pair<vector<Evaluated>, vector<Solution>> Selector_Epsilon::select(const DE& de
     {
         vector<double> violations(de.np(), numeric_limits<double>::infinity());
         for (size_t i = 0; i < target_results.size(); ++i)
-            violations[i] = accumulate(target_results[i].second.begin(), target_results[i].second.end(), 0);
+            violations[i] = accumulate(target_results[i].second.begin(), target_results[i].second.end(), 0.0);
         size_t cutoff = (size_t)(de.np() * theta);
         partial_sort(violations.begin(), violations.begin() + cutoff, violations.end());
         epsilon_0     = violations[cutoff - 1];
         epsilon_level = epsilon_0;
     }
-    cout << "Epsilon level: " << epsilon_level << endl;
     auto ret      = ISelector::select(de, targets, trials, target_results, trial_results);
     size_t gen    = de.curr_gen();
-    epsilon_level = gen > tc ? 0 : epsilon_0 * pow(1 - gen / tc, cp);
+    cout << "Epsilon level: " << epsilon_level << endl;
+    epsilon_level = gen > tc ? 0 : epsilon_0 * pow(1.0 - (double)gen / (double)tc, (double)cp);
+    printf("ep = %g, gen = %ld, tc = %ld, epsilon_0 = %g, cp = %ld, factor = %g\n", epsilon_level, gen, tc, epsilon_0, cp, pow(1.0 - (double)gen / (double)tc, (double)cp));
     return ret;
 }
 bool Selector_StaticPenalty::better(const Evaluated& r1, const Evaluated& r2)
 {
-    const double fom1 = r1.first + accumulate(r1.second.begin(), r1.second.end(), 0);
-    const double fom2 = r2.first + accumulate(r2.second.begin(), r2.second.end(), 0);
+    const double fom1 = r1.first + accumulate(r1.second.begin(), r1.second.end(), 0.0);
+    const double fom2 = r2.first + accumulate(r2.second.begin(), r2.second.end(), 0.0);
     return fom1 <= fom2;
 }
 bool Selector_FeasibilityRule::better(const Evaluated& r1, const Evaluated& r2)
 {
     const double fom1       = r1.first;
     const double fom2       = r2.first;
-    const double violation1 = accumulate(r1.second.begin(), r1.second.end(), 0);
-    const double violation2 = accumulate(r2.second.begin(), r2.second.end(), 0);
+    const double violation1 = accumulate(r1.second.begin(), r1.second.end(), 0.0);
+    const double violation2 = accumulate(r2.second.begin(), r2.second.end(), 0.0);
     if (violation1 == 0 && violation2 == 0)
         return fom1 <= fom2;
     else if (violation1 != 0 && violation2 != 0)
@@ -198,8 +200,8 @@ bool Selector_Epsilon::better(const Evaluated& r1, const Evaluated& r2)
 {
     const double fom1       = r1.first;
     const double fom2       = r2.first;
-    const double violation1 = accumulate(r1.second.begin(), r1.second.end(), 0);
-    const double violation2 = accumulate(r2.second.begin(), r2.second.end(), 0);
+    const double violation1 = accumulate(r1.second.begin(), r1.second.end(), 0.0);
+    const double violation2 = accumulate(r2.second.begin(), r2.second.end(), 0.0);
     if (violation1 <= epsilon_level && violation2 <= epsilon_level)
         return fom1 <= fom2;
     else if (violation1 > epsilon_level && violation2 > epsilon_level)
@@ -211,7 +213,7 @@ DE::DE(Objective func , const Ranges& rg
        , MutationStrategy ms , CrossoverStrategy cs , SelectionStrategy ss
        , double f , double cr , size_t np , size_t max_iter
        , unordered_map<string, double> extra)
-    : _func(func), _ranges(rg), _f(f), _cr(cr), _np(np), _dim(rg.size()), _max_iter(max_iter), _extra_conf(extra),_curr_gen(0), _use_built_in_strategy(false)
+    : _func(func), _ranges(rg), _f(f), _cr(cr), _np(np), _dim(rg.size()), _max_iter(max_iter), _extra_conf(extra), _curr_gen(0), _use_built_in_strategy(false)
 {
     set_mutator(ms, extra);
     set_crossover(cs, extra);
@@ -222,7 +224,7 @@ DE::DE(Objective func, const Ranges& rg
        , double f , double cr , size_t np , size_t max_iter
        , unordered_map<string, double> extra)
     : _func(func), _ranges(rg), _f(f), _cr(cr), _np(np), _dim(rg.size()), _max_iter(max_iter)
-    , _extra_conf(extra),_curr_gen(0), _mutator(m), _crossover(c), _selector(s), _use_built_in_strategy(true)
+    , _extra_conf(extra), _curr_gen(0), _mutator(m), _crossover(c), _selector(s), _use_built_in_strategy(true)
 {}
 Solution DE::solver()
 {
@@ -233,7 +235,7 @@ Solution DE::solver()
         auto doners = _mutator->mutation(*this);
         auto trials = _crossover->crossover(*this, _population, doners);
         vector<Evaluated> trial_results(_np);
-        for(size_t p_idx = 0; p_idx < _population.size(); ++p_idx)
+        for (size_t p_idx = 0; p_idx < _population.size(); ++p_idx)
         {
             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
         }
@@ -337,13 +339,11 @@ void DE::init()
                         _population[i][j] = distr(engine);
                     }
                 }
-                _results[i] = _func(i, _population[i]);
-                bool valid_flag = true;
-                for (auto vio : _results[i].second)
-                {
-                    if (std::isinf(vio)) valid_flag = false;
-                }
-                valid[i] = valid_flag;
+                _results[i]            = _func(i, _population[i]);
+                vector<double> vio_vec = _results[i].second;
+                auto inf_pred          = [](const double x)->bool{return std::isinf(x);};
+                bool valid_flag        = find_if(vio_vec.begin(), vio_vec.end(), inf_pred) == vio_vec.end();
+                valid[i]               = valid_flag;
                 num_valid += valid_flag ? 1 : 0;
             }
         }
@@ -363,6 +363,6 @@ void DE::report_best() const noexcept
 {
     size_t best_idx = find_best();
     const Evaluated& best_result = _results[best_idx];
-    const double violation = accumulate(best_result.second.begin(), best_result.second.end(), 0);
+    const double violation = accumulate(best_result.second.begin(), best_result.second.end(), 0.0);
     cout << "Best idx: " << best_idx << ", Best FOM: " << best_result.first << ", Constraint Violation: " << violation << endl;
 }
