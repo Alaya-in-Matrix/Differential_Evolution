@@ -6,12 +6,11 @@
     "thread_num":4, 
     "algorithm":{
         "type"      : "DE",
-        "f"         : 0.8,
+        "f"         : 0.9,
         "cr"        : 0.8,
         "mutation"  : "best1",
         "crossover" : "bin",
-        "selection" : "static-penalty",
-        "extra"     : {}
+        "selection" : "static-penalty"
     },
     "parameter": [
         { "name": "cm", "lb": 0.5, "ub": 1 }

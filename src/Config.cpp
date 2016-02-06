@@ -65,7 +65,18 @@ void Config::set_algo_para()
 {
     try
     {
-        const auto& algo_setting = _info_tree.get_child("algorithm");
+        _f  = 0.8;
+        _cr = 0.9;
+        _ms = MutationStrategy::Best1;
+        _cs = CrossoverStrategy::Bin;
+        _ss = SelectionStrategy::StaticPenalty;
+        _de_type    = "DE";
+        _extra_conf = unordered_map<string, double>{};
+        const auto& algo_setting_maybe = _info_tree.get_child_optional("algorithm");
+        if(algo_setting_maybe == boost::none) 
+            return;
+
+        const auto& algo_setting = algo_setting_maybe.value();
         string ms_str = algo_setting.get("mutation", "best1");
         string cs_str = algo_setting.get("crossover", "bin");
         string ss_str = algo_setting.get("selection", "static-penalty");
@@ -84,19 +95,21 @@ void Config::set_algo_para()
         _ms = ms_iter->second;
         _cs = cs_iter->second;
         _ss = ss_iter->second;
-        // const auto& extra_setting = algo_setting.get_child("extra");
-        // for(auto iter = extra_setting.begin(); iter != extra_setting.end(); ++iter)
-        // {
-        // }
+        auto extra_setting = algo_setting.get_child_optional("extra");
+        if(extra_setting != boost::none)
+        {
+            for(auto pr : extra_setting.value())
+            {
+                string name  = pr.first;
+                double value = pr.second.get_value<double>();
+                _extra_conf.insert(make_pair(name, value));
+            }
+        }
     }
     catch (const ptree_error& e)
     {
-        _de_type = "DE";
-        _f       = 0.8;
-        _cr      = 0.9;
-        _ms      = MutationStrategy::Best1;
-        _cs      = CrossoverStrategy::Bin;
-        _ss      = SelectionStrategy::StaticPenalty;
+        cerr << "Exception: " << e.what() << endl;
+        exit(EXIT_FAILURE);
     }
     catch (const exception& e)
     {
