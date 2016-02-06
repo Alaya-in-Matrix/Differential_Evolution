@@ -8,7 +8,7 @@ message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
 set(EXE de-solver)
-set(TEST testbench)
+set(TEST de-test)
 set(DE_LIB de)
 include_directories(inc)
 add_executable(${TEST}
@@ -32,7 +32,7 @@ endif(Boost_FOUND)
 
 if(CMAKE_INSTALL_PREFIX)
     message("-- Cmake install prefix: ${CMAKE_INSTALL_PREFIX}")
-    install(TARGETS ${EXE} ${DE_LIB} 
+    install(TARGETS ${EXE} ${TEST} ${DE_LIB} 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib)
     install(FILES inc/Evolution.h
