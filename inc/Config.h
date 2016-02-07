@@ -6,7 +6,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <string>
-#include "DE/DEStrategy.h"
+#include "DE/DE.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 class Config
