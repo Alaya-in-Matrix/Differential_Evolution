@@ -137,7 +137,7 @@ Objective Optimizer::gen_opt_func() const
                 if(std::isnan(m_value))
                     violation = numeric_limits<double>::infinity();
                 else
-                    violation = m_value <= c_value ? 0 : (m_value - c_value);
+                    violation = m_value <= c_value ? 0 : penalty_weight * (m_value - c_value);
                 assert(violation >= 0);
                 c_violation.push_back(violation);
                 total_violation += violation;

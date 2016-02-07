@@ -10,12 +10,12 @@
         "cr"        : 0.8,
         "mutation"  : "best1",
         "crossover" : "bin",
-        "selection" : "epsilon", 
+        "selection" : "static-penalty", 
         "extra" : {
             "theta" : 0.2, 
             "tc" : 125, 
             "cp" : 2, 
-            "min_valid_num" : 16
+            "min_valid_num" : 8
         }
     },
     "parameter": [
