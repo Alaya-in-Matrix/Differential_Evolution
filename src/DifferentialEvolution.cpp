@@ -182,7 +182,7 @@ pair<vector<Evaluated>, vector<Solution>> Selector_Epsilon::select(const DE& de
     size_t gen    = de.curr_gen();
     cout << "Epsilon level: " << epsilon_level << endl;
     epsilon_level = gen > tc ? 0 : epsilon_0 * pow(1.0 - (double)gen / (double)tc, (double)cp);
-    printf("ep = %g, gen = %ld, tc = %ld, epsilon_0 = %g, cp = %ld, factor = %g\n", epsilon_level, gen, tc, epsilon_0, cp, pow(1.0 - (double)gen / (double)tc, (double)cp));
+    printf("ep = %g, gen = %ld, tc = %ld, epsilon_0 = %g, cp = %ld, factor = %g\n", epsilon_level, gen, tc, epsilon_0, cp, pow(1.0 - (double)gen / (double)tc, cp));
     return ret;
 }
 bool Selector_StaticPenalty::better(const Evaluated& r1, const Evaluated& r2)
@@ -312,8 +312,8 @@ void DE::set_selector(SelectionStrategy ss, const unordered_map<string, double>&
         for (string name : vector<string> {"theta", "tc", "cp"})
             assert(config.find(name) != config.end());
         double theta = config.find("theta")->second;
-        size_t tc = config.find("tc")->second;
-        size_t cp = config.find("cp")->second;
+        double cp    = config.find("cp")->second;
+        size_t tc    = (size_t)config.find("tc")->second;
         _selector = new Selector_Epsilon(theta, tc, cp);
     }
     else

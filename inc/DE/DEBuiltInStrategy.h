@@ -46,8 +46,8 @@ public: // perhaps it would be better if this class inherits Selector_Epsilon an
 class Selector_Epsilon : public ISelector
 {
     const double theta;
+    const double cp;
     const size_t tc;
-    const size_t cp;
     double epsilon_0;
     double epsilon_level;
 public:
@@ -57,8 +57,8 @@ public:
             , const std::vector<Solution>&
             , const std::vector<Evaluated>&
             , const std::vector<Evaluated>&);
-    Selector_Epsilon(double theta, size_t tc, size_t cp)
-        : theta(theta), tc(tc), cp(cp)
+    Selector_Epsilon(double theta, double cp, size_t tc)
+        : theta(theta), cp(cp), tc(tc)
     {
         if (theta < 0 || theta > 1)
         {

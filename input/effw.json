@@ -10,9 +10,13 @@
         "cr"        : 0.8,
         "mutation"  : "best1",
         "crossover" : "bin",
-        "selection" : "static-penalty", 
+        "selection" : "epsilon", 
         "extra" : {
-            "fsigma" : 0.25
+            "min_valid_num" : 16
+            , "tc" : 125
+            , "cp" : 2
+            , "theta" : 0.2
+            , "fsigma" : 0.25
         }
     },
     "parameter": [
