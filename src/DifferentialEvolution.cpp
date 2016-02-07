@@ -27,9 +27,11 @@ vector<Solution> Mutator_Rand_1::mutation(const DE& de)
         size_t r1 = random_exclusive<size_t>(i_distr);
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {r1});
         size_t r3 = random_exclusive<size_t>(i_distr, vector<size_t> {r1, r2});
+        // de.f() might give a random number
+        double f  = de.f();
         for (size_t i = 0; i < de.dimension(); ++i)
         {
-            m[i] = population[r1][i] + de.f() * (population[r2][i] - population[r3][i]);
+            m[i] = population[r1][i] + f * (population[r2][i] - population[r3][i]);
             m[i] = boundary_constraint(de.range(i), m[i]);
         }
     }
@@ -46,9 +48,11 @@ vector<Solution> Mutator_Best_1::mutation(const DE& de)
     {
         size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx});
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1});
+        // de.f() might give a random number
+        double f  = de.f(); 
         for (size_t i = 0; i < de.dimension(); ++i)
         {
-            m[i] = population[best_idx][i] + de.f() * (population[r1][i] - population[r2][i]);
+            m[i] = population[best_idx][i] + f * (population[r1][i] - population[r2][i]);
             m[i] = boundary_constraint(de.range(i), m[i]);
         }
     }
@@ -67,9 +71,11 @@ vector<Solution> Mutator_Best_2::mutation(const DE& de)
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1});
         size_t r3 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1, r2});
         size_t r4 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1, r2, r3});
+        double f1 = de.f();
+        double f2 = de.f();
         for (size_t i = 0; i < de.dimension(); ++i)
         {
-            m[i] = population[best_idx][i] + de.f() * (population[r1][i] - population[r2][i]) + de.f() * (population[r3][i] - population[r4][i]);
+            m[i] = population[best_idx][i] + f1 * (population[r1][i] - population[r2][i]) + f2 * (population[r3][i] - population[r4][i]);
             m[i] = boundary_constraint(de.range(i), m[i]);
         }
     }
@@ -86,9 +92,11 @@ vector<Solution> Mutator_RandToBest_1::mutation(const DE& de)
     {
         size_t r1 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx});
         size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {best_idx, r1});
+        double f1 = de.f();
+        double f2 = de.f();
         for (size_t i = 0; i < de.dimension(); ++i)
         {
-            m[i] = m[i] + de.f() * (population[best_idx][i] - m[i]) + de.f() * (population[r1][i] - population[r2][i]);
+            m[i] = m[i] + f1 * (population[best_idx][i] - m[i]) + f2 * (population[r1][i] - population[r2][i]);
             m[i] = boundary_constraint(de.range(i), m[i]);
         }
     }

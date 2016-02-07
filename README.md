@@ -1,7 +1,7 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年02月07日 星期日 19时47分10秒 日
+* Last Modified:2016年02月07日 星期日 20时11分00秒 日
 
 ## Build and Install
 
@@ -24,4 +24,5 @@ You can also specify the build type(debug or release) manually by `-DCMAKE_BUILD
 
 ## Note
 
-* If you use your own defined mutator, please call `de.f()` every time you need an `F`。
+* When you're implementing your own mutation strategy, you need to consider that `de.f()` might give a random number, for example, 
+if you use `DERandomF` as DE solver
