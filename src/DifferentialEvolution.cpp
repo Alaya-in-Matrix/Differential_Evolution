@@ -235,6 +235,7 @@ Solution DE::solver()
         auto doners = _mutator->mutation(*this);
         auto trials = _crossover->crossover(*this, _population, doners);
         vector<Evaluated> trial_results(_np);
+        #pragma omp parallel for
         for (size_t p_idx = 0; p_idx < _population.size(); ++p_idx)
         {
             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
@@ -257,7 +258,7 @@ DE::~DE()
         delete _selector;
     }
 }
-void DE::set_mutator(MutationStrategy ms, const unordered_map<string, double>& config)
+void DE::set_mutator(MutationStrategy ms, const unordered_map<string, double>&)
 {
     switch (ms)
     {
@@ -279,7 +280,7 @@ void DE::set_mutator(MutationStrategy ms, const unordered_map<string, double>& c
         exit(EXIT_FAILURE);
     }
 }
-void DE::set_crossover(CrossoverStrategy cs, const unordered_map<string, double>& config)
+void DE::set_crossover(CrossoverStrategy cs, const unordered_map<string, double>&)
 {
     if (cs == CrossoverStrategy::Bin)
         _crossover = new Crossover_Bin;
