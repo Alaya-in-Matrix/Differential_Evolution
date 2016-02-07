@@ -12,9 +12,9 @@
         "crossover" : "bin",
         "selection" : "epsilon", 
         "extra" : {
-            "min_valid_num" : 16
+            "min_valid_num" : 20
             , "tc" : 125
-            , "cp" : 2
+            , "cp" : 5
             , "theta" : 0.2
             , "fsigma" : 0.25
         }

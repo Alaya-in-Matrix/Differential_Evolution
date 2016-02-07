@@ -237,7 +237,6 @@ DE::DE(Objective func, const Ranges& rg
 Solution DE::solver()
 {
     init();
-    report_best();
     for (_curr_gen = 1; _curr_gen < _max_iter; ++_curr_gen)
     {
         auto doners = _mutator->mutation(*this);
@@ -314,7 +313,7 @@ void DE::set_selector(SelectionStrategy ss, const unordered_map<string, double>&
         double theta = config.find("theta")->second;
         double cp    = config.find("cp")->second;
         size_t tc    = (size_t)config.find("tc")->second;
-        _selector = new Selector_Epsilon(theta, tc, cp);
+        _selector = new Selector_Epsilon(theta, cp, tc);
     }
     else
     {
