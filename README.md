@@ -1,7 +1,7 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年01月25日 星期一 16时18分27秒 一
+* Last Modified:2016年02月07日 星期日 19时47分10秒 日
 
 ## Build and Install
 
@@ -21,3 +21,7 @@ make install
 ```
 
 You can also specify the build type(debug or release) manually by `-DCMAKE_BUILD_TYPE=release` or `-DCMAKE_BUILD_TYPE=debug`
+
+## Note
+
+* If you use your own defined mutator, please call `de.f()` every time you need an `F`。

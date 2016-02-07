@@ -367,3 +367,13 @@ void DE::report_best() const noexcept
     const double violation = accumulate(best_result.second.begin(), best_result.second.end(), 0.0);
     cout << "Best idx: " << best_idx << ", Best FOM: " << best_result.first << ", Constraint Violation: " << violation << endl;
 }
+double DERandomF::f() const noexcept
+{
+    auto fsigma_iter = _extra_conf.find("fsigma");
+    double fsigma = 0;
+    if(fsigma_iter != _extra_conf.end())
+    {
+        fsigma = fsigma_iter->second;
+    }
+    return normal_distribution<double>(_f, fsigma)(engine);
+}

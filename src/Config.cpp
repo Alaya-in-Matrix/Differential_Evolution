@@ -89,7 +89,7 @@ void Config::set_algo_para()
             throw invalid_argument("Unrecognized crossover strategy: " + cs_str);
         if(ss_iter == ss_lut.end())
             throw invalid_argument("Unrecognized selection strategy: " + ss_str);
-        _de_type     = algo_setting.get("de_type", "DE");
+        _de_type     = algo_setting.get("type", "DE");
         _f           = algo_setting.get("f", 0.8);
         _cr          = algo_setting.get("cr", 0.9);
         _ms = ms_iter->second;

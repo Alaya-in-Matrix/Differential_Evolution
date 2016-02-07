@@ -60,10 +60,17 @@ public:
     Selector_Epsilon(double theta, size_t tc, size_t cp)
         : theta(theta), tc(tc), cp(cp)
     {
-        if(theta < 0 || theta > 1)
+        if (theta < 0 || theta > 1)
         {
             std::cerr << "theta should be in [0, 1]" << std::endl;
             exit(EXIT_FAILURE);
         }
     }
+};
+class DERandomF : public DE
+{
+    double _fsigma; // F ~ N(_f, _fsigma)
+public:
+    using DE::DE;
+    double f()  const noexcept;
 };

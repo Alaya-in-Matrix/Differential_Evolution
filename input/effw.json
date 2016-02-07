@@ -5,17 +5,14 @@
     "workspace": "workspace/effw",
     "thread_num":4, 
     "algorithm":{
-        "type"      : "DE",
-        "f"         : 0.9,
+        "type"      : "DERandomF",
+        "f"         : 0.75,
         "cr"        : 0.8,
         "mutation"  : "best1",
         "crossover" : "bin",
         "selection" : "static-penalty", 
         "extra" : {
-            "theta" : 0.2, 
-            "tc" : 125, 
-            "cp" : 2, 
-            "min_valid_num" : 8
+            "fsigma" : 0.25
         }
     },
     "parameter": [
