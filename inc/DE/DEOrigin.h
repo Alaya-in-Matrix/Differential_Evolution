@@ -1,5 +1,6 @@
 #pragma once
-#include "DEInterface.h"
+#include "strategy/DEInterface.h"
+#include "strategy/DEBuiltInStrategy.h"
 class DE
 {
 protected:

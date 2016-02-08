@@ -3,12 +3,12 @@
     "init_num": 40, 
     "out_dir": "out/effw",
     "workspace": "workspace/effw",
-    "thread_num":4, 
+    "thread_num":2, 
     "algorithm":{
         "type"      : "DERandomF",
         "f"         : 0.75,
         "cr"        : 0.8,
-        "mutation"  : "best1",
+        "mutation"  : "rand-to-best1",
         "crossover" : "bin",
         "selection" : "epsilon", 
         "extra" : {
