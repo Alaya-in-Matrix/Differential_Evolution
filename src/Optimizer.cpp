@@ -17,7 +17,7 @@
 #include "Optimizer.h"
 using namespace std;
 Optimizer::Optimizer(const Config& opt_info)
-    : _opt_info(opt_info), _de_solver(nullptr)
+    : _opt_info(opt_info), _opt_func(gen_opt_func()), _de_solver(de_factory())
 {}
 Optimizer::~Optimizer()
 {
@@ -61,41 +61,36 @@ void Optimizer::init()
         exit(EXIT_FAILURE);
     }
 }
-vector<double> Optimizer::run()
+DE* Optimizer::de_factory() const noexcept
 {
-    assert(_de_solver == nullptr);
-    const auto opt_func         = gen_opt_func();
+    DE* de_solver;
     if (_opt_info.de_type() == "DE")
     {
-        _de_solver = new DE(opt_func
-                            , _opt_info.get_para_ranges()
-                            , _opt_info.mutation_strategy()
-                            , _opt_info.crossover_strategy()
-                            , _opt_info.selection_strategy()
-                            , _opt_info.de_f()
-                            , _opt_info.de_cr()
-                            , _opt_info.population()
-                            , _opt_info.iter_num()
-                            , _opt_info.extra_conf());
+        de_solver = new DE(_opt_func, _opt_info.get_para_ranges(),
+                           _opt_info.mutation_strategy(),
+                           _opt_info.crossover_strategy(),
+                           _opt_info.selection_strategy(), _opt_info.de_f(),
+                           _opt_info.de_cr(), _opt_info.population(),
+                           _opt_info.iter_num(), _opt_info.extra_conf());
     }
     else if (_opt_info.de_type() == "DERandomF")
     {
-        _de_solver = new DERandomF(opt_func
-                            , _opt_info.get_para_ranges()
-                            , _opt_info.mutation_strategy()
-                            , _opt_info.crossover_strategy()
-                            , _opt_info.selection_strategy()
-                            , _opt_info.de_f()
-                            , _opt_info.de_cr()
-                            , _opt_info.population()
-                            , _opt_info.iter_num()
-                            , _opt_info.extra_conf());
+        de_solver = new DERandomF(
+            _opt_func, _opt_info.get_para_ranges(),
+            _opt_info.mutation_strategy(), _opt_info.crossover_strategy(),
+            _opt_info.selection_strategy(), _opt_info.de_f(), _opt_info.de_cr(),
+            _opt_info.population(), _opt_info.iter_num(),
+            _opt_info.extra_conf());
     }
     else
     {
         cerr << "Unsupported DE variant: " << _opt_info.de_type() << endl;
         exit(EXIT_FAILURE);
     }
+    return de_solver;
+}
+vector<double> Optimizer::run()
+{
     vector<double> solution = _de_solver->solver();
     return solution;
 }
