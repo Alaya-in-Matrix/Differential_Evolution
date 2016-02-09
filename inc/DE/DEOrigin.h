@@ -19,9 +19,9 @@ protected:
     ISelector*  _selector;
     bool _use_built_in_strategy;
 
-    virtual void set_mutator(MutationStrategy, const std::unordered_map<std::string, double>&);
-    virtual void set_crossover(CrossoverStrategy, const std::unordered_map<std::string, double>&);
-    virtual void set_selector(SelectionStrategy, const std::unordered_map<std::string, double>&);
+    virtual IMutator*   set_mutator(MutationStrategy, const std::unordered_map<std::string, double>&)    const noexcept;
+    virtual ICrossover* set_crossover(CrossoverStrategy, const std::unordered_map<std::string, double>&) const noexcept;
+    virtual ISelector*  set_selector(SelectionStrategy, const std::unordered_map<std::string, double>&)  const noexcept;
     virtual void init();
 
 public:
