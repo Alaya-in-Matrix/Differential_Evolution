@@ -26,6 +26,51 @@ vector<Solution> Mutator_Rand_1::mutation(const DE& de)
     }
     return mutated;
 }
+vector<Solution> Mutator_Rand_2::mutation(const DE& de)
+{
+    const vector<Solution>& population = de.population();
+    assert(population.size() == de.np());
+    uniform_int_distribution<size_t> i_distr(0, population.size() - 1);
+    vector<Solution> mutated = population;
+    for (Solution& m : mutated)
+    {
+        size_t r1 = random_exclusive<size_t>(i_distr);
+        size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {r1});
+        size_t r3 = random_exclusive<size_t>(i_distr, vector<size_t> {r1, r2});
+        size_t r4 = random_exclusive<size_t>(i_distr, vector<size_t> {r1, r2, r3});
+        size_t r5 = random_exclusive<size_t>(i_distr, vector<size_t> {r1, r2, r3, r4});
+        double f1 = de.f();
+        double f2 = de.f();
+        for (size_t i = 0; i < de.dimension(); ++i)
+        {
+            m[i] = population[r1][i] + f1 * (population[r2][i] - population[r3][i]) + f2 * (population[r4][i] - population[r5][i]);
+            m[i] = boundary_constraint(de.range(i), m[i]);
+        }
+    }
+    return mutated;
+}
+vector<Solution> Mutator_CurrentToRand_1::mutation(const DE& de)
+{
+    const vector<Solution>& population = de.population();
+    assert(population.size() == de.np());
+    uniform_int_distribution<size_t> i_distr(0, population.size() - 1);
+    uniform_real_distribution<size_t> k_distr(0, 1);
+    vector<Solution> mutated = population;
+    for (Solution& m : mutated)
+    {
+        size_t r1 = random_exclusive<size_t>(i_distr);
+        size_t r2 = random_exclusive<size_t>(i_distr, vector<size_t> {r1});
+        size_t r3 = random_exclusive<size_t>(i_distr, vector<size_t> {r1, r2});
+        double f  = de.f();
+        double k  = k_distr(engine);
+        for (size_t i = 0; i < de.dimension(); ++i)
+        {
+            m[i] = m[i] + k * (population[r1][i] - m[i]) + f * (population[r2][i] - population[r3][i]);
+            m[i] = boundary_constraint(de.range(i), m[i]);
+        }
+    }
+    return mutated;
+}
 vector<Solution> Mutator_Best_1::mutation(const DE& de)
 {
     const vector<Solution>& population = de.population();
