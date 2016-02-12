@@ -55,7 +55,7 @@ Solution DE::solver()
         auto trials = _crossover->crossover(*this, _population, doners);
         vector<Evaluated> trial_results(_np);
 #pragma omp parallel for
-        for (size_t p_idx = 0; p_idx < _population.size(); ++p_idx)
+        for (int p_idx = 0; p_idx < _population.size(); ++p_idx)
         {
             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
         }
@@ -158,13 +158,13 @@ void DE::init()
     size_t min_valid_num =
         _extra_conf.find("min_valid_num") == _extra_conf.end()
             ? 1
-            : _extra_conf.find("min_valid_num")->second;
+            : (size_t)_extra_conf.find("min_valid_num")->second;
     vector<bool> valid(_np, false);
     size_t num_valid = 0;
     do
     {
 #pragma omp parallel for reduction(+ : num_valid)
-        for (size_t i = 0; i < _np; ++i)
+        for (int i = 0; i < _np; ++i)
         {
             if (!valid[i])
             {

@@ -4,9 +4,9 @@ project(solver)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE debug)
 endif()
-message("-- CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
 include_directories(inc)
 set(EXE       de-solver)
 set(TEST      de-test)
@@ -24,24 +24,46 @@ set(DE_SRC
     src/DE/DEOrigin.cpp
     src/DE/strategy/DEInterface.cpp
     src/DE/strategy/DEBuiltInStrategy.cpp)
-
+set(SOLVER_INC
+    inc/Config.h
+    inc/DifferentialEvolution.h
+    inc/hspice_util.h
+    inc/Optimizer.h
+    inc/util.h)
+set(SOLVER_SRC
+    src/Config.cpp
+    src/hspice_util.cpp
+    src/main.cpp
+    src/Optimizer.cpp)
+set(TEST_INC test/testbench.h)
+set(TEST_SRC test/test.cpp)
+if(WIN32) # for visual studio
+    set(DE_SRC     ${DE_SRC}     ${DE_INC})
+    set(SOLVER_SRC ${SOLVER_SRC} ${SOLVER_INC})
+    set(TEST_SRC   ${TEST_SRC}   ${TEST_INC})
+endif(WIN32)
 add_library(${DE_SHARED} SHARED ${DE_SRC})
 add_library(${DE_STATIC} STATIC ${DE_SRC})
-add_executable(${TEST}
-               test/test.cpp)
-add_executable(${EXE} 
-               src/Optimizer.cpp 
-               src/hspice_util.cpp
-               src/Config.cpp
-               src/main.cpp)
+add_executable(${TEST} ${TEST_SRC})
+add_executable(${EXE} ${SOLVER_SRC})
 target_link_libraries(${TEST} ${DE_STATIC})
 target_link_libraries(${EXE} ${DE_STATIC})
 
+# use can use -DBOOST_ROOT or -DBOOST_INCLUDEDIR and -DBOOST_LIBRARYDIR as hint
 find_package(Boost 1.57 REQUIRED)
 if(Boost_FOUND)
+    message(STATUS "boost inc dir: ${Boost_INCLUDE_DIR}")
+    message(STATUS "boost lib dir: ${Boost_LIB_DIR}")
+    include_directories(${Boost_INCLUDE_DIR})
 else(Boost_FOUND)
     message(FATAL_ERROR "Boost not found")
 endif(Boost_FOUND)
+
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    message(STATUS "Support OpenMP: ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif(OPENMP_FOUND)
 
 if(CMAKE_INSTALL_PREFIX)
     message(STATUS "Cmake install prefix: ${CMAKE_INSTALL_PREFIX}")

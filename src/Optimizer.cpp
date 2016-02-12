@@ -97,16 +97,16 @@ vector<double> Optimizer::run()
 Objective Optimizer::gen_opt_func() const
 {
     shared_ptr<int> iter_counter = make_shared<int>(0);
-    return [&, iter_counter](const size_t idx, const vector<double>& input) -> pair<double, vector<double>>
-    {
+	return [&, iter_counter](const size_t idx, const vector<double>& input) -> pair<double, vector<double>>
+	{
 
-        vector<double> c_violation;
-        double fom = numeric_limits<double>::infinity();
-        const auto measured    = simulation(idx, input);
-        const auto meas_failed = measured.find("failed");
+		vector<double> c_violation;
+		double fom = numeric_limits<double>::infinity();
+		const auto measured = simulation(idx, input);
+		const auto meas_failed = measured.find("failed");
 
-        #pragma omp atomic
-        *iter_counter = *iter_counter + 1;
+#pragma omp atomic
+		*iter_counter += 1;
 
         if (meas_failed == measured.end() || meas_failed->second == 0)
         {

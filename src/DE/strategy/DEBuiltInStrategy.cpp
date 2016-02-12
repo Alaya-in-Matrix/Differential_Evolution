@@ -2,6 +2,7 @@
 #include "util.h"
 #include <iostream>
 #include <algorithm>
+#include <numeric>
 #include <cassert>
 using namespace std;
 static mt19937_64 engine(random_device{}());
@@ -54,7 +55,7 @@ vector<Solution> Mutator_CurrentToRand_1::mutation(const DE& de)
     const vector<Solution>& population = de.population();
     assert(population.size() == de.np());
     uniform_int_distribution<size_t> i_distr(0, population.size() - 1);
-    uniform_real_distribution<size_t> k_distr(0, 1);
+    uniform_real_distribution<double> k_distr(0, 1);
     vector<Solution> mutated = population;
     for (Solution& m : mutated)
     {

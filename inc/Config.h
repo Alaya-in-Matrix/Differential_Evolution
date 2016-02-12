@@ -41,9 +41,9 @@ class Config
 
     // spec
     // usage: auto w = OptDirectionWeight[Minimize]...
-    int    _penalty_weight;
     std::string _fom_name;
-    double _fom_direction;
+    int    _fom_direction; // 1 for minimize, -1 for maximize, convert maximizing problem to minimizing problem
+    double _penalty_weight;
     std::unordered_map<std::string, double> _constraints;
     std::unordered_map<std::string, double> _constr_weight;
 
