@@ -55,7 +55,8 @@ Solution DE::solver()
         auto trials = _crossover->crossover(*this, _population, doners);
         vector<Evaluated> trial_results(_np);
 #pragma omp parallel for
-        for (int p_idx = 0; p_idx < _population.size(); ++p_idx)
+		// OpenMP 2.0 doesn't allow unsigned for loop index!
+        for (int p_idx = 0; p_idx < (int)_population.size(); ++p_idx)
         {
             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
         }
@@ -164,7 +165,8 @@ void DE::init()
     do
     {
 #pragma omp parallel for reduction(+ : num_valid)
-        for (int i = 0; i < _np; ++i)
+		// OpenMP 2.0 doesn't allow unsigned for-loop index
+        for (int i = 0; i < (int)_np; ++i)
         {
             if (!valid[i])
             {
