@@ -58,11 +58,12 @@ if(Boost_FOUND)
 else(Boost_FOUND)
     message(FATAL_ERROR "Boost not found")
 endif(Boost_FOUND)
-
 find_package(OpenMP)
 if(OPENMP_FOUND)
     message(STATUS "Support OpenMP: ${OpenMP_CXX_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+else(OPENMP_FOUND)
+	message(FATAL_ERROR "OpenMP not found")
 endif(OPENMP_FOUND)
 
 if(CMAKE_INSTALL_PREFIX)
