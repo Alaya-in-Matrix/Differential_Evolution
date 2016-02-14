@@ -1,17 +1,16 @@
-cmake_minimum_required(VERSION 3.2.1)
 project(solver)
+cmake_minimum_required(VERSION 3.2.1)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE debug)
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
-include_directories(inc)
-set(EXE       de-solver)
-set(TEST      de-test)
-set(DE_SHARED de)
-set(DE_STATIC de-static)
+# All targets
+set(EXE       de-solver)  # main program, use DE to optimize analog circuit
+set(TEST      de-test)    # test DE algorithm
+set(DE_SHARED de)         # de shared library
+set(DE_STATIC de-static)  # de static library
 
 # source list
 set(DE_INC
@@ -43,13 +42,19 @@ if(WIN32) # for visual studio
     set(SOLVER_SRC ${SOLVER_SRC} ${SOLVER_INC})
     set(TEST_SRC   ${TEST_SRC}   ${TEST_INC})
 endif(WIN32)
+
+# build targets
+include_directories(inc)
 add_library(${DE_SHARED} SHARED ${DE_SRC})
 add_library(${DE_STATIC} STATIC ${DE_SRC})
 add_executable(${TEST} ${TEST_SRC})
 add_executable(${EXE} ${SOLVER_SRC})
 target_link_libraries(${TEST} ${DE_STATIC})
 target_link_libraries(${EXE} ${DE_STATIC})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set_property(TARGET ${EXE} ${DE_SHARED} ${DE_STATIC} ${TEST} PROPERTY CXX_STANDARD 11)
 
+# find dependencies
 # use can use -DBOOST_ROOT or -DBOOST_INCLUDEDIR and -DBOOST_LIBRARYDIR as hint
 find_package(Boost 1.57 REQUIRED)
 if(Boost_FOUND)
@@ -67,6 +72,7 @@ else(OPENMP_FOUND)
 	message(FATAL_ERROR "OpenMP not found")
 endif(OPENMP_FOUND)
 
+# install program, libs, headers and docs
 if(CMAKE_INSTALL_PREFIX)
     message(STATUS "Cmake install prefix: ${CMAKE_INSTALL_PREFIX}")
     install(TARGETS ${DE_SHARED} ${DE_STATIC} ${EXE} ${TEST} 
