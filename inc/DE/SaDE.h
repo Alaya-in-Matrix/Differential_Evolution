@@ -29,6 +29,9 @@ protected:
     std::vector<double> init_strategy_prob() const noexcept;
 
 public:
+    SaDE(const SaDE&) = delete;
+    SaDE(SaDE&&) = delete;
+    SaDE& operator=(const SaDE&) = delete;
     SaDE(Objective, 
          const Ranges&,
          size_t np,
@@ -37,9 +40,9 @@ public:
          SelectionStrategy, 
          std::unordered_map<std::string, double> extra);
     ~SaDE();
-    Solution solver();
     double f()  const noexcept;
     double cr() const noexcept;
+    Solution solver();
 };
 #include <vector>
 #include <unordered_map>
@@ -85,4 +88,16 @@ vector<double> SaDE::init_strategy_prob() const noexcept
 {
     const size_t num_strategy = _strategy_pool.size();
     return vector<double>(num_strategy, 1.0 / (double)(num_strategy));
+}
+double SaDE::f() const noexcept
+{
+    return normal_distribution<double>(_fmu, _fsigma)(engine);
+}
+double SaDE::cr() const noexcept
+{
+    return normal_distribution<double>(_crmu, _crsigma)(engine);
+}
+Solution SaDE::solver()
+{
+    return _population.at(0);
 }

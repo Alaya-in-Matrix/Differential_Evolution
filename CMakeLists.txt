@@ -15,6 +15,7 @@ set(DE_STATIC de-static)
 
 # source list
 set(DE_INC
+    inc/DE/SaDE.h
     inc/DE/DERandomF.h
     inc/DE/DEOrigin.h
     inc/DE/strategy/DEInterface.h
