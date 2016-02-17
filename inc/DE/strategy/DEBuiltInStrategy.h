@@ -5,27 +5,31 @@
 #include "DEInterface.h"
 class Mutator_Rand_1 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
 };
 class Mutator_Rand_2 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
 };
 class Mutator_Best_1 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
 };
 class Mutator_Best_2 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
 };
 class Mutator_RandToBest_1 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
+};
+class Mutator_RandToBest_2 : public IMutator {
+public:
+    Solution mutation_solution(const DE&, size_t);
 };
 class Mutator_CurrentToRand_1 : public IMutator {
 public:
-    std::vector<Solution> mutation(const DE&);
+    Solution mutation_solution(const DE&, size_t);
 };
 class Crossover_Bin : public ICrossover {
 public:

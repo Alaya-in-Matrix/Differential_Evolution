@@ -10,6 +10,16 @@ double IMutator::boundary_constraint(pair<double, double> rg, double val) const 
     uniform_real_distribution<double> distr(rg.first, rg.second);
     return rg.first <= val && val <= rg.second ? val : distr(engine);
 }
+std::vector<Solution> IMutator::mutation(const DE& de) 
+{
+    vector<Solution> mutated;
+    mutated.reserve(de.population().size());
+    for(size_t i = 0; i < de.population().size(); ++i)
+    {
+        mutated.push_back(mutation_solution(de, i));
+    }
+    return mutated;
+}
 pair<vector<Evaluated>, vector<Solution>> ISelector::select(const DE& de
                                        , const vector<Solution>& targets
                                        , const vector<Solution>& trials

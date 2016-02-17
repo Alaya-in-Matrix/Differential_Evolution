@@ -22,7 +22,7 @@ DE::DE(Objective func, const Ranges& rg, MutationStrategy ms,
       _max_iter(max_iter),
       _extra_conf(extra),
       _curr_gen(0),
-      _use_built_in_strategy(false)
+      _use_built_in_strategy(true)
 {
     _mutator   = set_mutator(ms, extra);
     _crossover = set_crossover(cs, extra);
@@ -43,7 +43,7 @@ DE::DE(Objective func, const Ranges& rg, IMutator* m, ICrossover* c,
       _mutator(m),
       _crossover(c),
       _selector(s),
-      _use_built_in_strategy(true)
+      _use_built_in_strategy(false)
 {
 }
 Solution DE::solver()
@@ -75,8 +75,7 @@ DE::~DE()
 {
     if (_use_built_in_strategy)
     {
-        assert(_mutator != nullptr && _crossover != nullptr &&
-               _selector != nullptr);
+        assert(_mutator != nullptr && _crossover != nullptr && _selector != nullptr);
         delete _mutator;
         delete _crossover;
         delete _selector;
@@ -90,14 +89,23 @@ IMutator* DE::set_mutator(MutationStrategy ms, const unordered_map<string, doubl
         case Rand1:
             mutator = new Mutator_Rand_1;
             break;
+        case Rand2:
+            mutator = new Mutator_Rand_2;
+            break;
         case Best1:
             mutator = new Mutator_Best_1;
             break;
         case Best2:
             mutator = new Mutator_Best_2;
             break;
+        case CurrentToRand1:
+            mutator = new Mutator_CurrentToRand_1;
+            break;
         case RandToBest1:
             mutator = new Mutator_RandToBest_1;
+            break;
+        case RandToBest2:
+            mutator = new Mutator_RandToBest_2;
             break;
         default:
             mutator = nullptr;
@@ -198,6 +206,21 @@ void DE::init()
 }
 size_t DE::find_best() const noexcept
 {
+    // If we need to avoid unnecessary `find_best` calling, 
+    // below code could be used:
+    //     static size_t curr_gen = 0;
+    //     static size_t best_idx = 0;
+    //     if (curr_gen < _curr_gen)
+    //     {
+    //         auto min_iter = min_element(_results.begin(), _results.end(),
+    //                                     [&](const Evaluated& e1, const Evaluated& e2) -> bool
+    //                                     {
+    //                                         return _selector->better(e1, e2);
+    //                                     });
+    //         curr_gen = _curr_gen;
+    //         best_idx = distance(_results.begin(), min_iter);
+    //     }
+    //     return best_idx;
     auto min_iter =
         min_element(_results.begin(), _results.end(),
                     [&](const Evaluated& e1, const Evaluated& e2) -> bool

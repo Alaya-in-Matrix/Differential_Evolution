@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <deque>
 #include <utility>
 class SaDE : public DE
 {
@@ -15,18 +16,19 @@ protected:
     struct Strategy
     {
         Strategy(IMutator* m, ICrossover* c) : mutator(m), crossover(c) {}
-        IMutator* mutator;
+        IMutator*   mutator;
         ICrossover* crossover;
-        ~Strategy();
-        Strategy(const Strategy&) =default;
+        ~Strategy(){};  // Do not delete strategy pointers when destructing
+        Strategy(const Strategy&)            = default;
         Strategy& operator=(const Strategy&) = default;
     };
-    std::vector<Strategy>            _strategy_pool;
-    std::vector<double>              _strategy_prob;
-    std::vector<std::vector<size_t>> _mem_success;
-    std::vector<std::vector<size_t>> _mem_failure;
+    std::vector<Strategy>           _strategy_pool;
+    std::vector<double>             _strategy_prob;
+    std::deque<std::vector<size_t>> _mem_success;
+    std::deque<std::vector<size_t>> _mem_failure;
     std::vector<Strategy> init_strategy() const noexcept;
-    std::vector<double> init_strategy_prob() const noexcept;
+    std::vector<double>   init_strategy_prob() const noexcept;
+    Strategy select_strategy(const std::vector<double>& probs, std::vector<Strategy>& strategies) const noexcept;
 
 public:
     SaDE(const SaDE&) = delete;
@@ -46,15 +48,11 @@ public:
 };
 #include <vector>
 #include <unordered_map>
+#include <deque>
 #include <string>
 #include <random>
 using namespace std;
 static mt19937_64 engine(random_device{}());
-SaDE::Strategy::~Strategy()
-{
-    if(mutator != nullptr)   delete mutator;
-    if(crossover != nullptr) delete crossover;
-}
 SaDE::SaDE(Objective f, const Ranges& r, size_t np, size_t max_iter, size_t lp,
            SelectionStrategy ss, unordered_map<string, double> extra)
     : DE(f, r, nullptr, nullptr, nullptr, 0, 0, np, max_iter, extra),
@@ -74,6 +72,19 @@ SaDE::SaDE(Objective f, const Ranges& r, size_t np, size_t max_iter, size_t lp,
 SaDE::~SaDE()
 {
     DE::~DE();
+    for(auto& s : _strategy_pool)
+    {
+        if(s.mutator   != nullptr) delete s.mutator;
+        if(s.crossover != nullptr) delete s.crossover;
+    }
+}
+double SaDE::f() const noexcept
+{
+    return normal_distribution<double>(_fmu, _fsigma)(engine);
+}
+double SaDE::cr() const noexcept
+{
+    return normal_distribution<double>(_crmu, _crsigma)(engine);
 }
 vector<SaDE::Strategy> SaDE::init_strategy() const noexcept
 {
@@ -89,15 +100,39 @@ vector<double> SaDE::init_strategy_prob() const noexcept
     const size_t num_strategy = _strategy_pool.size();
     return vector<double>(num_strategy, 1.0 / (double)(num_strategy));
 }
-double SaDE::f() const noexcept
-{
-    return normal_distribution<double>(_fmu, _fsigma)(engine);
-}
-double SaDE::cr() const noexcept
-{
-    return normal_distribution<double>(_crmu, _crsigma)(engine);
-}
 Solution SaDE::solver()
 {
-    return _population.at(0);
+    init();
+    for(_curr_gen = 1; _curr_gen < _max_iter; ++_curr_gen)
+    {
+        Strategy strategy = select_strategy(_strategy_prob, _strategy_pool);
+        // auto doners = strategy.mutator->mutation(*this);
+        // auto trials
+    }
 }
+
+// Solution DE::solver()
+// {
+//     init();
+//     for (_curr_gen = 1; _curr_gen < _max_iter; ++_curr_gen)
+//     {
+//         auto doners = _mutator->mutation(*this);
+//         auto trials = _crossover->crossover(*this, _population, doners);
+//         vector<Evaluated> trial_results(_np);
+// #pragma omp parallel for
+// 		// OpenMP 2.0 doesn't allow unsigned for loop index!
+//         for (int p_idx = 0; p_idx < (int)_population.size(); ++p_idx)
+//         {
+//             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
+//         }
+//         auto new_result = _selector->select(*this, _population, trials,
+//                                             _results, trial_results);
+//         copy(new_result.first.begin(), new_result.first.end(),
+//              _results.begin());
+//         copy(new_result.second.begin(), new_result.second.end(),
+//              _population.begin());
+//         report_best();
+//     }
+//     size_t best_idx = find_best();
+//     return _population[best_idx];
+// }
