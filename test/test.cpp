@@ -22,7 +22,7 @@ void test_all_mutation_strategy()
                            "CurrentToRand1", "RandToBest1", "RandToBest2"};
     vector<MutationStrategy> pool{Rand1,          Rand2,       Best1,      Best2,
                                   CurrentToRand1, RandToBest1, RandToBest2};
-    CrossoverStrategy c = Exp;
+    CrossoverStrategy c = Bin;
     SelectionStrategy s = StaticPenalty;
     Objective f = Testbench::ackley;
     vector<double> best_guess{0, 0};
@@ -30,7 +30,7 @@ void test_all_mutation_strategy()
     const double global_best = f(0, best_guess).first;
     for (size_t i = 0; i < pool.size(); ++i)
     {
-        DERandomF test_solver(f, ranges, pool[i], c, s, 0.75, 0.8, 100, 200,
+        DERandomF test_solver(f, ranges, pool[i], c, s, 0.75, 0.8, 100, 500,
                               unordered_map<string, double>{{"fsigma", 0.25}});
         const double calc_best = f(0, test_solver.solver()).first;
         cout << m_names[i]

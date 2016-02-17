@@ -139,45 +139,36 @@ Solution Mutator_RandToBest_2::mutation_solution(const DE& de, size_t curr_idx)
     }
     return mutated;
 }
-vector<Solution> Crossover_Bin::crossover(const DE& de, const vector<Solution>& targets, const vector<Solution>& doners)
+Solution Crossover_Bin::crossover_solution(const DE& de, const Solution& target, const Solution& doner)
 {
-    assert(targets.size() == de.np() && de.np() == doners.size());
-    uniform_int_distribution<size_t> distr_j(0, de.dimension() - 1);
-    uniform_real_distribution<double> distr_ij(0, 1);
-    const double cr         = de.cr();
-    const size_t dimension  = de.dimension();
-    vector<Solution> trials = targets;
-    for (size_t i = 0; i < de.np(); ++i)
+    const double cr  = de.cr();
+    const size_t dim = de.dimension();
+    uniform_int_distribution<size_t> distr_idx(0, dim - 1);
+    uniform_real_distribution<double> distr_prob(0, 1);
+    Solution trial(dim);
+    const size_t rand_idx = distr_idx(engine);
+    for (size_t i = 0; i < dim; ++i)
     {
-        assert(targets[i].size() == dimension && dimension == doners[i].size());
-        const size_t jrand = distr_j(engine);
-        for (size_t j = 0; j < dimension; ++j)
-        {
-            trials[i][j] = distr_ij(engine) <= cr || jrand == j ? doners[i][j] : targets[i][j];
-        }
-    };
-    return trials;
-}
-vector<Solution> Crossover_Exp::crossover(const DE& de, const vector<Solution>& targets, const vector<Solution>& doners)
-{
-    assert(targets.size() == de.np() && de.np() == doners.size());
-    const double cr         = de.cr();
-    const size_t dim        = de.dimension();
-    uniform_int_distribution<size_t>  int_distr(0, dim - 1);
-    uniform_real_distribution<double> real_distr(0, 1);
-    vector<Solution> trials = targets;
-    for (size_t i = 0; i < de.np(); ++i)
-    {
-        assert(targets[i].size() == dim && dim == doners[i].size());
-        size_t l = 1;
-        for (; real_distr(engine) <= cr && l < dim; ++l) {}
-        const size_t start_idx = int_distr(engine);
-        for (size_t j = start_idx; j < start_idx + l; ++j)
-        {
-            trials[i][j % dim] = doners[i][j % dim];
-        }
+        trial[i] = distr_prob(engine) <= cr || i == rand_idx ? doner[i] : target[i];
     }
-    return trials;
+    return trial;
+}
+Solution Crossover_Exp::crossover_solution(const DE& de, const Solution& target, const Solution& doner)
+{
+    const double cr  = de.cr();
+    const size_t dim = de.dimension();
+    assert(target.size() == dim && dim == doner.size());
+    uniform_int_distribution<size_t>  distr_idx(0, dim - 1);
+    uniform_real_distribution<double> distr_prob(0, 1);
+    Solution trial(target);
+    size_t l = 1;
+    for(; distr_prob(engine) < cr && l < dim; ++l);
+    const size_t start_idx = distr_idx(engine);
+    for(size_t i = start_idx; i < start_idx + l; ++i)
+    {
+        trial[i % dim] = doner[i % dim];
+    }
+    return trial;
 }
 pair<vector<Evaluated>, vector<Solution>> Selector_Epsilon::select(const DE& de
         , const vector<Solution>& targets

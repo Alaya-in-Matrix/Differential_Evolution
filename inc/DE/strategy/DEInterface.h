@@ -13,31 +13,28 @@ enum MutationStrategy
     RandToBest1, 
     RandToBest2
 };
+const std::unordered_map<std::string, MutationStrategy> ms_lut{{"rand1", Rand1},
+                                                               {"rand2", Rand2},
+                                                               {"best1", Best1},
+                                                               {"best2", Best2},
+                                                               {"current-to-rand1", CurrentToRand1},
+                                                               {"rand-to-best1", RandToBest1},
+                                                               {"rand-to-best2", RandToBest2}};
 enum CrossoverStrategy
 {
     Bin = 0,
     Exp
 };
+const std::unordered_map<std::string, CrossoverStrategy> cs_lut{{"bin", Bin},
+                                                                {"exp", Exp}};
 enum SelectionStrategy
 {
     StaticPenalty = 0,
     FeasibilityRule,
     Epsilon
 };
-const std::unordered_map<std::string, MutationStrategy> ms_lut{
-    {"rand1", Rand1},
-    {"rand2", Rand2},
-    {"best1", Best1},
-    {"best2", Best2},
-    {"current-to-rand1", CurrentToRand1}, 
-    {"rand-to-best1", RandToBest1},
-    {"rand-to-best2", RandToBest2}};
-const std::unordered_map<std::string, CrossoverStrategy> cs_lut{{"bin", Bin},
-                                                                {"exp", Exp}};
 const std::unordered_map<std::string, SelectionStrategy> ss_lut{
-    {"static-penalty", StaticPenalty},
-    {"feasibility-rule", FeasibilityRule},
-    {"epsilon", Epsilon}};
+    {"static-penalty", StaticPenalty}, {"feasibility-rule", FeasibilityRule}, {"epsilon", Epsilon}};
 typedef std::vector<double> Solution;
 typedef std::vector<std::pair<double, double>> Ranges;
 typedef std::vector<double> ConstraintViolation;
@@ -56,11 +53,11 @@ public:
 class ICrossover
 {
 public:
-    // virtual Solution crossover_solution(const DE&, const Solution&,
-    //                                     const Solution&) = 0;
+    virtual Solution crossover_solution(const DE&, const Solution&,
+                                        const Solution&) = 0;
     virtual std::vector<Solution> crossover(const DE&,
                                             const std::vector<Solution>&,
-                                            const std::vector<Solution>&) = 0;
+                                            const std::vector<Solution>&);
     virtual ~ICrossover() {}
 };
 class ISelector

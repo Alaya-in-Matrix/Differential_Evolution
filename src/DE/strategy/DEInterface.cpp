@@ -20,6 +20,15 @@ std::vector<Solution> IMutator::mutation(const DE& de)
     }
     return mutated;
 }
+vector<Solution> ICrossover::crossover(const DE& de, const vector<Solution>& targets, const vector<Solution>& doners)
+{
+    vector<Solution> trials(de.np(), Solution(de.dimension()));
+    for(size_t i = 0; i < de.np(); ++i)
+    {
+        trials[i] = crossover_solution(de, targets[i], doners[i]);
+    }
+    return trials;
+}
 pair<vector<Evaluated>, vector<Solution>> ISelector::select(const DE& de
                                        , const vector<Solution>& targets
                                        , const vector<Solution>& trials
