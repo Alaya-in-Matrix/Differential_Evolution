@@ -20,6 +20,7 @@ set(DE_INC
     inc/DE/strategy/DEInterface.h
     inc/DE/strategy/DEBuiltInStrategy.h)
 set(DE_SRC 
+    src/DE/SaDE.cpp
     src/DE/DERandomF.cpp
     src/DE/DEOrigin.cpp
     src/DE/strategy/DEInterface.cpp
