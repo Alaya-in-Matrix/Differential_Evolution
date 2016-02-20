@@ -82,6 +82,12 @@ DE* Optimizer::de_factory() const noexcept
             _opt_info.population(), _opt_info.iter_num(),
             _opt_info.extra_conf());
     }
+    else if (_opt_info.de_type() == "SaDE")
+    {
+        de_solver = new SaDE(_opt_func, _opt_info.get_para_ranges(), _opt_info.population(),
+                             _opt_info.iter_num(), _opt_info.selection_strategy(),
+                             _opt_info.extra_conf());
+    }
     else
     {
         cerr << "Unsupported DE variant: " << _opt_info.de_type() << endl;

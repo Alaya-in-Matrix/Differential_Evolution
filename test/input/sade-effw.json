@@ -1,18 +1,18 @@
 {
-    "iter_num": 500, 
+    "iter_num": 1000, 
     "init_num": 50, 
     "out_dir": "out/effw",
     "workspace": "workspace/effw",
     "thread_num":2, 
     "algorithm":{
-        "type"      : "DERandomF",
-        "f"         : 0.75,
-        "cr"        : 0.8,
-        "mutation"  : "best1",
-        "crossover" : "bin",
+        "type"      : "SaDE",
         "selection" : "feasibility-rule", 
-        "extra" : {
-            "fsigma" : 0.25
+        "extra": {
+            "lp":50, 
+            "fmu":0.5, 
+            "fsigma":0.3, 
+            "crmu":0.8, 
+            "crsigma":0
         }
     },
     "parameter": [

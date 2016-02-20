@@ -5,6 +5,7 @@
 #include <string>
 #include <deque>
 #include <utility>
+#include <memory>
 class SaDE : public DE
 {
 protected:
@@ -15,16 +16,9 @@ protected:
     size_t _lp;
     struct Strategy
     {
-        Strategy(IMutator* m, ICrossover* c) : mutator(m), crossover(c) {}
-        IMutator*   mutator;
-        ICrossover* crossover;
-        ~Strategy()
-        {
-            if(mutator   != nullptr) delete mutator;
-            if(crossover != nullptr) delete crossover;
-        }
-        Strategy(const Strategy&)            = default;
-        Strategy& operator=(const Strategy&) = default;
+        Strategy(std::shared_ptr<IMutator> m, std::shared_ptr<ICrossover> c) : mutator(m), crossover(c) {}
+        std::shared_ptr<IMutator> mutator;
+        std::shared_ptr<ICrossover> crossover;
     };
     const std::vector<Strategy>     _strategy_pool;
     std::vector<double>             _strategy_prob;
@@ -32,20 +26,19 @@ protected:
     std::deque<std::vector<size_t>> _mem_failure;
     std::vector<Strategy>           _init_strategy() const noexcept;
     std::vector<double>             _init_strategy_prob() const noexcept;
-    Strategy _select_strategy(const std::vector<double>& probs,
-                             const std::vector<Strategy>& strategies) const noexcept;
-    void _update_memory_prob(const std::vector<Evaluated>& old_result,
-                             const std::vector<Evaluated>& new_result) noexcept;
+    size_t _select_strategy(const std::vector<double>& probs) const noexcept;
+    void _update_memory_prob(size_t gen, const std::vector<size_t>& strategy_vec,
+                             const std::vector<Evaluated>& old_result,
+                             const std::vector<Evaluated>& new_result);
 
 public:
     SaDE(const SaDE&) = delete;
-    SaDE(SaDE&&) = delete;
+    SaDE(SaDE&&)      = delete;
     SaDE& operator=(const SaDE&) = delete;
     SaDE(Objective, 
          const Ranges&,
          size_t np,
          size_t max_iter,
-         size_t lp,
          SelectionStrategy, 
          std::unordered_map<std::string, double> extra);
     ~SaDE() = default;

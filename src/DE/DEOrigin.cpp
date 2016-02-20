@@ -233,8 +233,13 @@ void DE::report_best() const noexcept
 {
     size_t best_idx = find_best();
     const Evaluated& best_result = _results[best_idx];
-    const double violation =
-        accumulate(best_result.second.begin(), best_result.second.end(), 0.0);
+    const double violation = accumulate(best_result.second.begin(), best_result.second.end(), 0.0);
+    double total_violation = 0;
+    for(auto r : _results)
+    {
+        total_violation += accumulate(r.second.begin(), r.second.end(), 0.0);
+    }
     cout << "Best idx: " << best_idx << ", Best FOM: " << best_result.first
-         << ", Constraint Violation: " << violation << endl;
+         << ", Constraint Violation: " << violation 
+         << ", Average Constraint Violation: " << total_violation / _results.size() << endl;
 }
