@@ -11,8 +11,8 @@
             "lp":50, 
             "fmu":0.5, 
             "fsigma":0.3, 
-            "crmu":0.8, 
-            "crsigma":0
+            "crmu":0.5, 
+            "crsigma":0.1
         }
     },
     "parameter": [

@@ -47,7 +47,10 @@ void test_SaDE(size_t dim)
     const vector<double> best_guess(dim, 0);
     const vector<pair<double, double>> ranges(dim, {-10, 10});
     const double global_best = f(0, best_guess).first;
-    SaDE sade(f, ranges, dim * 10, 600, StaticPenalty, {{"lp", 10}});
+    const unordered_map<string, double> extra{
+        {"lp", 50}, {"fmu", 0.75}, {"fsigma", 0.25}, {"crmu", 0.8}, {"crsigma", 0.1},
+    };
+    SaDE sade(f, ranges, dim * 10, 600, StaticPenalty, extra);
     const Solution solved = sade.solver();
     const double solved_fom = f(0, solved).first;
     cout << "SaDE, delta between global and solved: " << fabs(global_best - solved_fom) << endl;

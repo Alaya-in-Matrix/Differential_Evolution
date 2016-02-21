@@ -6,6 +6,7 @@
 #include <string>
 #include <random>
 #include <cassert>
+#include <algorithm>
 using namespace std;
 static mt19937_64 engine(random_device{}());
 SaDE::SaDE(Objective f, const Ranges& r, size_t np, size_t max_iter,
@@ -14,7 +15,8 @@ SaDE::SaDE(Objective f, const Ranges& r, size_t np, size_t max_iter,
       _strategy_pool(_init_strategy()), 
       _strategy_prob(_init_strategy_prob()), 
       _mem_success(deque<vector<size_t>>{}), 
-      _mem_failure(deque<vector<size_t>>{})
+      _mem_failure(deque<vector<size_t>>{}), 
+      _crmemory(vector<deque<vector<double>>>(_strategy_pool.size()))
 {
     vector<string> names{"lp", "fmu", "fsigma", "crmu", "crsigma"};
     for(auto n : names)
@@ -38,7 +40,7 @@ double SaDE::f() const noexcept
 }
 double SaDE::cr() const noexcept
 {
-    return normal_distribution<double>(_crmu, _crsigma)(engine);
+    return _curr_cr;
 }
 vector<SaDE::Strategy> SaDE::_init_strategy() const noexcept
 {
@@ -58,7 +60,7 @@ vector<double> SaDE::_init_strategy_prob() const noexcept
     const size_t num_strategy = _strategy_pool.size();
     return vector<double>(num_strategy, 1.0 / static_cast<double>(num_strategy));
 }
-void SaDE::_update_memory_prob(size_t gen, const std::vector<size_t>& strategy_vec,
+void SaDE::_update_memory_prob(const std::vector<size_t>& strategy_vec,
                                const std::vector<Evaluated>& old_result,
                                const std::vector<Evaluated>& new_result)
 {
@@ -152,7 +154,85 @@ size_t SaDE::_select_strategy(const vector<double>& probs) const noexcept
     assert(sampled < ranges.size());
     return sampled;
 }
-
+vector<double> SaDE::gen_cr_vec(const std::vector<size_t>& s_vec) noexcept
+{
+    vector<double> cr_vec(_np, 0);
+    if (_curr_gen <= _lp)
+    {
+        for (size_t i = 0; i < _np; ++i)
+        {
+            double tmp = -1;
+            while(tmp < 0 || tmp > 1)
+            {
+                tmp = normal_distribution<double>(_crmu, _crsigma)(engine);
+            }
+            cr_vec[i] = tmp;
+        }
+    }
+    else
+    {
+        vector<double> crmu_vec(_strategy_pool.size(), 0);
+        cout << "crmu: ";
+        for (size_t i = 0; i < crmu_vec.size(); ++i)
+        {
+            vector<double> container;
+            const auto& memory = _crmemory[i];
+            assert(memory.size() == _lp);
+            for (const auto& vec : memory)
+            {
+                for (auto val : vec)
+                {
+                    container.push_back(val);
+                }
+            }
+            if (container.empty())
+                crmu_vec[i] = _crmu;
+            else
+            {
+                nth_element(container.begin(), container.begin() + container.size() / 2,
+                            container.end());
+                crmu_vec[i] = container[container.size() / 2];
+            }
+            cout << crmu_vec[i] << ' ';
+        }
+        cout << endl;
+        for (size_t i = 0; i < _np; ++i)
+        {
+            double tmp = -1;
+            while(tmp < 0 || tmp > 1)
+            {
+                tmp = normal_distribution<double>(crmu_vec[s_vec[i]], _crsigma)(engine);
+            }
+            cr_vec[i] = tmp;
+        }
+    }
+    return cr_vec;
+}
+void SaDE::_update_cr_memory(const vector<size_t>& s_vec, const vector<double>& cr_vec,
+                             const vector<Evaluated>& old_result,
+                             const vector<Evaluated>& new_result) noexcept
+{
+    // really in-efficient!
+    assert(s_vec.size() == _np && _np == cr_vec.size());
+    assert(old_result.size() == _np && _np == new_result.size());
+    for (size_t i = 0; i < _strategy_pool.size(); ++i)
+    {
+        _crmemory[i].push_back(vector<double>{});
+        if (_curr_gen > _lp)
+        {
+            _crmemory[i].pop_front();
+            assert(_crmemory[i].size() == _lp);
+        }
+    }
+    for (size_t i = 0; i < cr_vec.size(); ++i)
+    {
+        const size_t s_idx = s_vec[i];
+        if(_selector->better(new_result[i], old_result[i]))
+        {
+            _crmemory[s_idx][_crmemory[s_idx].size() - 1].push_back(cr_vec[i]);
+        }
+    }
+}
 Solution SaDE::solver()
 {
     init();
@@ -164,11 +244,14 @@ Solution SaDE::solver()
         s_vec.reserve(_np);
         for (size_t i = 0; i < _np; ++i)
             s_vec.push_back(_select_strategy(_strategy_prob));
+        vector<double> cr_vec = gen_cr_vec(s_vec);
+        assert(cr_vec.size() == _np);
         for (size_t i = 0; i < _np; ++i)
         {
             const Strategy& s      = _strategy_pool[s_vec[i]];
             const Solution& target = _population[i];
             const Solution doner   = s.mutator->mutation_solution(*this, i);
+            _curr_cr = cr_vec[i];
             trials.push_back(s.crossover->crossover_solution(*this, target, doner));
         }
         vector<Evaluated> trial_results(_np);
@@ -179,7 +262,8 @@ Solution SaDE::solver()
         {
             trial_results[p_idx] = _func(p_idx, trials[p_idx]);
         }
-        _update_memory_prob(_curr_gen, s_vec, _results, trial_results);
+        _update_memory_prob(s_vec, _results, trial_results);
+        _update_cr_memory(s_vec, cr_vec, _results, trial_results);
         auto new_result = _selector->select(*this, _population, trials, _results, trial_results);
         _results        = new_result.first;
         _population     = new_result.second;

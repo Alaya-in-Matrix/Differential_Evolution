@@ -24,12 +24,17 @@ protected:
     std::vector<double>             _strategy_prob;
     std::deque<std::vector<size_t>> _mem_success;
     std::deque<std::vector<size_t>> _mem_failure;
+    std::vector<std::deque<std::vector<double>>> _crmemory;
+    double _curr_cr;
     std::vector<Strategy>           _init_strategy() const noexcept;
     std::vector<double>             _init_strategy_prob() const noexcept;
     size_t _select_strategy(const std::vector<double>& probs) const noexcept;
-    void _update_memory_prob(size_t gen, const std::vector<size_t>& strategy_vec,
+    std::vector<double> gen_cr_vec(const std::vector<size_t>&) noexcept;
+    void _update_memory_prob(const std::vector<size_t>& strategy_vec,
                              const std::vector<Evaluated>& old_result,
                              const std::vector<Evaluated>& new_result);
+    void _update_cr_memory(const std::vector<size_t>&, const std::vector<double>&,
+                           const std::vector<Evaluated>&, const std::vector<Evaluated>&) noexcept;
 
 public:
     SaDE(const SaDE&) = delete;

@@ -1,7 +1,7 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年02月07日 星期日 20时11分00秒 日
+* Last Modified:2016年02月21日 星期日 14时16分44秒 日
 
 ## Build and Install
 
@@ -26,3 +26,4 @@ You can also specify the build type(debug or release) manually by `-DCMAKE_BUILD
 
 * When you're implementing your own mutation strategy, you need to consider that `de.f()` might give a random number, for example, 
 if you use `DERandomF` as DE solver
+* This program is not optimized for performance on the assumption that the function evaluation is the most expensive part
