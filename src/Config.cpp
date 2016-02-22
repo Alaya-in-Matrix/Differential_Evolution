@@ -192,7 +192,7 @@ void Config::set_spec()
             return -1;
         else
         {
-            throw new invalid_argument("Invalid optimization direciton: " + type + ", supported: mimimize, maximize");
+            throw invalid_argument("Invalid optimization direciton: " + type + ", supported: mimimize, maximize");
         }
     };
     try

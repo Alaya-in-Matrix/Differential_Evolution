@@ -1,7 +1,7 @@
 #include "DifferentialEvolution.h"
+#include "global.h"
 #include <random>
 using namespace std;
-static mt19937_64 engine(random_device{}());
 double DERandomF::f() const noexcept
 {
     auto fsigma_iter = _extra_conf.find("fsigma");

@@ -66,8 +66,8 @@ public:
     // I perhaps should use TOML format config file
     // as it is more human-readable
     enum SpecFormat { Json = 0, TOML };
-    Config(std::string, SpecFormat = Json);
-    Config(const ptree& );
+    explicit Config(std::string, SpecFormat = Json);
+    explicit Config(const ptree& );
     decltype(_para_names) get_para_names()  const noexcept { return _para_names;     }
     decltype(_ranges)     get_para_ranges() const noexcept { return _ranges;         }
     unsigned int iter_num()                 const noexcept { return _iter_num;       }

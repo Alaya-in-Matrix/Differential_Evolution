@@ -1,5 +1,6 @@
 #include "testbench.h"
 #include "DifferentialEvolution.h"
+#include <omp.h>
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -11,7 +12,8 @@ void test_all_mutation_strategy(size_t);
 void test_SaDE(size_t);
 int main()
 {
-    test_all_mutation_strategy(5);
+    omp_set_num_threads(1);
+//    test_all_mutation_strategy(5);
     test_SaDE(5);
     return 0;
 }
@@ -48,7 +50,7 @@ void test_SaDE(size_t dim)
     const vector<pair<double, double>> ranges(dim, {-10, 10});
     const double global_best = f(0, best_guess).first;
     const unordered_map<string, double> extra{
-        {"lp", 50}, {"fmu", 0.75}, {"fsigma", 0.25}, {"crmu", 0.8}, {"crsigma", 0.1},
+        {"lp", 10}, {"fmu", 0.75}, {"fsigma", 0.25}, {"crmu", 0.8}, {"crsigma", 0.1},
     };
     SaDE sade(f, ranges, dim * 10, 600, StaticPenalty, extra);
     const Solution solved = sade.solver();

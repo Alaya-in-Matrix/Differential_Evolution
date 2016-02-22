@@ -1,9 +1,9 @@
 #include "DifferentialEvolution.h"
 #include "util.h"
+#include "global.h"
 #include <random>
 #include <cassert>
 using namespace std;
-static mt19937_64 engine(random_device{}());
 double IMutator::boundary_constraint(pair<double, double> rg, double val) const noexcept
 {
     assert(rg.first <= rg.second);

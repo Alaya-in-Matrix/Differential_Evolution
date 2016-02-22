@@ -14,12 +14,14 @@ set(DE_STATIC de-static)  # de static library
 
 # source list
 set(DE_INC
+    inc/global.h
     inc/DE/SaDE.h
     inc/DE/DERandomF.h
     inc/DE/DEOrigin.h
     inc/DE/strategy/DEInterface.h
     inc/DE/strategy/DEBuiltInStrategy.h)
 set(DE_SRC 
+    src/global.cpp
     src/DE/SaDE.cpp
     src/DE/DERandomF.cpp
     src/DE/DEOrigin.cpp

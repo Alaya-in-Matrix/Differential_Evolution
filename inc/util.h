@@ -1,4 +1,5 @@
 #pragma once
+#include "global.h"
 #include <iostream>
 #include <vector>
 #include <random>
@@ -8,7 +9,6 @@ Integral random_exclusive(std::uniform_int_distribution<Integral>& distr,
                           const std::vector<Integral>& exclude = std::vector<Integral>{})
 {
     using namespace std;
-    static mt19937_64 engine(std::random_device{}());
     if (exclude.size() >= (distr.b() - distr.a() + 1))
     {
         cerr << "random_exclusive, exclusive list greater than random range!" << endl;

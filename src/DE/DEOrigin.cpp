@@ -1,5 +1,6 @@
 #include "DE/DEOrigin.h"
 #include "util.h"
+#include "global.h"
 #include <cstdio>
 #include <iostream>
 #include <algorithm>
@@ -9,7 +10,6 @@
 #include <numeric>
 #include <string>
 using namespace std;
-static mt19937_64 engine(random_device{}());
 DE::DE(Objective func, const Ranges& rg, MutationStrategy ms,
        CrossoverStrategy cs, SelectionStrategy ss, double f, double cr,
        size_t np, size_t max_iter, unordered_map<string, double> extra)

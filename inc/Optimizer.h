@@ -15,7 +15,7 @@ class Optimizer
     std::unordered_map<std::string, double> simulation(unsigned int, const std::vector<double>&) const;
     DE* de_factory() const noexcept; 
 public:
-    Optimizer(const Config&);
+    explicit Optimizer(const Config&);
     void init();
     std::vector<double> run();
     ~Optimizer();

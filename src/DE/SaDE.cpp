@@ -1,4 +1,5 @@
 #include "DE/SaDE.h"
+#include "global.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -8,7 +9,6 @@
 #include <cassert>
 #include <algorithm>
 using namespace std;
-static mt19937_64 engine(random_device{}());
 SaDE::SaDE(Objective f, const Ranges& r, size_t np, size_t max_iter,
            SelectionStrategy ss, unordered_map<string, double> extra)
     : DE(f, r, nullptr, nullptr, nullptr, 0, 0, np, max_iter, extra),
@@ -62,7 +62,7 @@ vector<double> SaDE::_init_strategy_prob() const noexcept
 }
 void SaDE::_update_memory_prob(const std::vector<size_t>& strategy_vec,
                                const std::vector<Evaluated>& old_result,
-                               const std::vector<Evaluated>& new_result)
+                               const std::vector<Evaluated>& new_result) noexcept
 {
     // gen new records
     vector<size_t> success_r(_strategy_pool.size(), 0);
@@ -87,49 +87,37 @@ void SaDE::_update_memory_prob(const std::vector<size_t>& strategy_vec,
     {
         _mem_success.pop_front();
         _mem_failure.pop_front();
-        assert(_mem_success.size() == _lp && _lp == _mem_failure.size());
         // update probablities
-        const double epsilon = 0.02;  // to avoid null probablities
+        const double epsilon = 0.01;  // to avoid null probablities
         vector<size_t> num_success(_strategy_pool.size(), 0);
         vector<size_t> num_failure(_strategy_pool.size(), 0);
-        for (const auto& record : _mem_success)
+        assert(_mem_success.size() == _lp && _lp == _mem_failure.size());
+        for(size_t i = 0; i < _lp; ++i)
         {
-            for (size_t i = 0; i < _strategy_pool.size(); ++i)
+            const vector<size_t>& rs = _mem_success[i];
+            const vector<size_t>& rf = _mem_failure[i];
+            assert(rs.size() == _strategy_pool.size() && _strategy_pool.size() == rf.size());
+            for(size_t j = 0; j < _strategy_pool.size(); ++j)
             {
-                num_success[i] += record[i];
-            }
-        }
-        for (const auto& record : _mem_failure)
-        {
-            for (size_t i = 0; i < _strategy_pool.size(); ++i)
-            {
-                num_failure[i] += record[i];
+                num_success[j] += rs[j];
+                num_failure[j] += rf[j];
             }
         }
         vector<double> success_rate(_strategy_pool.size(), epsilon);
         for (size_t i = 0; i < success_rate.size(); ++i)
         {
-            if (num_success[i] == 0 && 0 == num_failure[i])
-                success_rate[i] = 0;
-            else
+            if (num_success[i] + num_failure[i] > 0)
+            {
                 success_rate[i] += static_cast<double>(num_success[i]) /
                                    static_cast<double>(num_failure[i] + num_success[i]);
-        }
-        const double total_success_rate = accumulate(success_rate.begin(), success_rate.end(), 0.0);
-        if (total_success_rate > 0)
-        {
-            for (size_t i = 0; i < _strategy_prob.size(); ++i)
-            {
-                _strategy_prob[i] = success_rate[i] / total_success_rate;
             }
         }
+        const double prob_normalizer = accumulate(success_rate.begin(), success_rate.end(), 0.0);
+        for (size_t i = 0; i < _strategy_prob.size(); ++i)
+        {
+            _strategy_prob[i] = success_rate[i] / prob_normalizer;
+        }
     }
-    cout << "Prob: ";
-    for(size_t i = 0; i < _strategy_prob.size(); ++i)
-    {
-        cout << _strategy_prob[i] << ' ';
-    }
-    cout << endl;
 }
 size_t SaDE::_select_strategy(const vector<double>& probs) const noexcept
 {
@@ -215,6 +203,7 @@ void SaDE::_update_cr_memory(const vector<size_t>& s_vec, const vector<double>& 
     // really in-efficient!
     assert(s_vec.size() == _np && _np == cr_vec.size());
     assert(old_result.size() == _np && _np == new_result.size());
+    assert(_crmemory.size() == _strategy_pool.size());
     for (size_t i = 0; i < _strategy_pool.size(); ++i)
     {
         _crmemory[i].push_back(vector<double>{});

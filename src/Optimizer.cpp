@@ -1,3 +1,7 @@
+#include "Optimizer.h"
+#include "hspice_util.h"
+#include "DifferentialEvolution.h"
+#include "Config.h"
 #include <cstdio>
 #include <iostream>
 #include <omp.h>
@@ -11,10 +15,6 @@
 #include <functional>
 #include <memory>
 #include <boost/algorithm/string.hpp>
-#include "hspice_util.h"
-#include "DifferentialEvolution.h"
-#include "Config.h"
-#include "Optimizer.h"
 using namespace std;
 Optimizer::Optimizer(const Config& opt_info)
     : _opt_info(opt_info), _opt_func(gen_opt_func()), _de_solver(de_factory())

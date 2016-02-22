@@ -1,11 +1,11 @@
-#include "DifferentialEvolution.h"
+#include "global.h"
 #include "util.h"
+#include "DifferentialEvolution.h"
 #include <iostream>
 #include <algorithm>
 #include <numeric>
 #include <cassert>
 using namespace std;
-static mt19937_64 engine(random_device{}());
 Solution Mutator_Rand_1::mutation_solution(const DE& de, size_t curr_idx)
 {
     const vector<Solution>& population = de.population();

@@ -1,3 +1,4 @@
+#include "hspice_util.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -6,7 +7,6 @@
 #include <cassert>
 #include <unordered_map>
 #include <limits>
-#include "hspice_util.h"
 using namespace std;
 void gen_param(const vector<string>& names, const vector <double>& values, const string path)
 {

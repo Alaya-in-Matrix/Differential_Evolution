@@ -32,7 +32,7 @@ protected:
     std::vector<double> gen_cr_vec(const std::vector<size_t>&) noexcept;
     void _update_memory_prob(const std::vector<size_t>& strategy_vec,
                              const std::vector<Evaluated>& old_result,
-                             const std::vector<Evaluated>& new_result);
+                             const std::vector<Evaluated>& new_result) noexcept;
     void _update_cr_memory(const std::vector<size_t>&, const std::vector<double>&,
                            const std::vector<Evaluated>&, const std::vector<Evaluated>&) noexcept;
 
