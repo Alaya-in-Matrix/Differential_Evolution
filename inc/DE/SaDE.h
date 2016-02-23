@@ -29,7 +29,7 @@ protected:
     std::vector<Strategy>           _init_strategy() const noexcept;
     std::vector<double>             _init_strategy_prob() const noexcept;
     size_t _select_strategy(const std::vector<double>& probs) const noexcept;
-    std::vector<double> gen_cr_vec(const std::vector<size_t>&) noexcept;
+    std::vector<double> gen_cr_vec(const std::vector<size_t>&) const noexcept;
     void _update_memory_prob(const std::vector<size_t>& strategy_vec,
                              const std::vector<Evaluated>& old_result,
                              const std::vector<Evaluated>& new_result) noexcept;
