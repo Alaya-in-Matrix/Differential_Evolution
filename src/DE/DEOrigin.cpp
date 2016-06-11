@@ -237,10 +237,7 @@ void DE::report_best() const noexcept
     double total_violation = 0;
     for(auto r : _results)
     {
-        for(auto rv : r.second)
-        {
-            total_violation += rv > 0 ? rv : 0; 
-        }
+        total_violation += accumulate(r.second.begin(), r.second.end(), 0.0);
     }
     cout << "Best idx: " << best_idx << ", Best FOM: " << best_result.first
          << ", Constraint Violation: " << violation 
