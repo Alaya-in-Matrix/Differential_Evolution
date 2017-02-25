@@ -39,6 +39,7 @@ typedef std::vector<double> Solution;
 typedef std::vector<std::pair<double, double>> Ranges;
 typedef std::vector<double> ConstraintViolation;
 typedef std::pair<double, ConstraintViolation> Evaluated;
+// all elements in constraint violation vector should be non-negative
 typedef std::function<Evaluated(const size_t, const Solution&)> Objective;
 
 class DE;
