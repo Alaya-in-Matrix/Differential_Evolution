@@ -1,7 +1,7 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified: 2017/06/24-11:10:36
+* Last Modified: 2017/06/24-11:13:23
 
 ## Build and Install
 
@@ -53,20 +53,20 @@ enum SelectionStrategy
 };
 ```
 
-- Epsilon: ![Takahama, Tetsuyuki, and Setsuko Sakai. "Constrained optimization by the ε constrained differential evolution with an archive and gradient-based mutation." Evolutionary Computation (CEC), 2010 IEEE Congress on. IEEE, 2010.](http://ieeexplore.ieee.org/abstract/document/5586484/)
-- FeasibilityRule: ![Mezura-Montes, Efrén, Carlos A. Coello Coello, and Edy I. Tun-Morales. "Simple feasibility rules and differential evolution for constrained optimization." Mexican International Conference on Artificial Intelligence. Springer Berlin Heidelberg, 2004.](https://pdfs.semanticscholar.org/e90d/c00b726b01d3da39d39bd5182278c15f13af.pdf)
+- Epsilon: [Takahama, Tetsuyuki, and Setsuko Sakai. "Constrained optimization by the ε constrained differential evolution with an archive and gradient-based mutation." Evolutionary Computation (CEC), 2010 IEEE Congress on. IEEE, 2010.](http://ieeexplore.ieee.org/abstract/document/5586484/)
+- FeasibilityRule: [Mezura-Montes, Efrén, Carlos A. Coello Coello, and Edy I. Tun-Morales. "Simple feasibility rules and differential evolution for constrained optimization." Mexican International Conference on Artificial Intelligence. Springer Berlin Heidelberg, 2004.](https://pdfs.semanticscholar.org/e90d/c00b726b01d3da39d39bd5182278c15f13af.pdf)
 - User-defined mutation/crossover/selection strategy is also supported.
 
 Two DE variants are implemented:
 
 - DERandomF: Original DE, but the parameter F in each iteration is a random variable following gaussian distribution
-- SaDE: ![Qin, A. Kai, Vicky Ling Huang, and Ponnuthurai N. Suganthan. "Differential evolution algorithm with strategy adaptation for global numerical optimization." IEEE transactions on Evolutionary Computation 13.2 (2009): 398-417.](http://ieeexplore.ieee.org/abstract/document/4632146/)
+- SaDE: [Qin, A. Kai, Vicky Ling Huang, and Ponnuthurai N. Suganthan. "Differential evolution algorithm with strategy adaptation for global numerical optimization." IEEE transactions on Evolutionary Computation 13.2 (2009): 398-417.](http://ieeexplore.ieee.org/abstract/document/4632146/)
 
 My recommendation:
 
 - DERandomF
 - Best1/Bin/FeasibilityRule
-- F = 0.8
+- F ~ N(0.75, 0.25)
 - CR = 0.8
 
 ## Example
