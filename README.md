@@ -1,7 +1,7 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified: 2017/06/24-11:25:32
+* Last Modified: 2017/06/24-11:32:50
 
 ## Build and Install
 
@@ -91,7 +91,7 @@ int main()
     };
 
     const vector<pair<double, double>> ranges{{-3, 3}, {-5, 5}};
-    const MutationStrategy ms  = MutationStrategy::Best1;
+    const MutationStrategy  ms = MutationStrategy::Best1;
     const CrossoverStrategy cs = CrossoverStrategy::Bin;
     const SelectionStrategy ss = SelectionStrategy::FeasibilityRule; // How to handle constraints
     const double F             = 0.8;
