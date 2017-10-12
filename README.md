@@ -1,7 +1,11 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified: 2017/10/12-15:23:54
+* Last Modified: 2017/10/12-15:26:43
+
+## About
+
+The basic differential evolution algorithm, and some of its variants.
 
 ## Build and Install
 
@@ -44,7 +48,7 @@ enum CrossoverStrategy
 };
 ```
 
-Selection strategies, to handle constraints:
+Selection strategies to handle constraints:
 
 ```cpp
 enum SelectionStrategy
