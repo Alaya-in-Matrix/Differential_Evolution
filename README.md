@@ -1,14 +1,14 @@
 # README
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified: 2017/06/24-11:32:50
+* Last Modified: 2017/10/12-15:23:54
 
 ## Build and Install
 
 Dependencies:
 
 * CMake, with a minimum version of 3.2.1
-* Boost, minumu required: 1.57, and if you installed boost in a custom
+* Boost, minumum required: 1.57, and if you installed boost in a custom
   directory, you have to specify it by `-DBOOST_ROOT=yore/boost/root`
 
 Below is an examle to install:
